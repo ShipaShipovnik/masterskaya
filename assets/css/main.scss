@@ -1,0 +1,35 @@
+$red: #dc3b46;
+$salat: #84c318;
+@import url("https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  // font-family: "Raleway", sans-serif;
+  font-family: "Montserrat", sans-serif;
+  font-optical-sizing: auto;
+}
+
+li {
+  list-style-type: none;
+}
+
+body {
+  background-color: #f0f0f0;
+}
+
+a:hover {
+  cursor: pointer;
+}
+
+.text-muted {
+  color: rgb(0, 0, 0, 50%);
+}
+
+.layout-container {
+  width: 1200px;
+  margin: 0 auto;
+  // outline: 1px red solid;
+  height: 100%;
+}
