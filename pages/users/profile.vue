@@ -141,7 +141,6 @@ const handleTabChange = (tab) => {
         border: 1px solid grey;
         width: 100%;
         aspect-ratio: 1 / 1;
-
     }
 
 }

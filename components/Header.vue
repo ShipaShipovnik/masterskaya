@@ -2,7 +2,9 @@
     <header class="header">
         <div class="layout-container">
             <div class="header__logo">
-                <h1>MASTERSKAYA</h1>
+                <NuxtLink to="/">
+                    <h1>MASTERSKAYA</h1>
+                </NuxtLink>
             </div>
             <nav class="header__nav">
                 <NuxtLink to="/">
@@ -15,20 +17,28 @@
                     <li class="header__nav-link">FAQ</li>
                 </NuxtLink>
             </nav>
-            <div class="header__auth">
-                <img src="" alt="avatar" class="">
-                <p>МОЙ ПРОФИЛЬ</p>
 
-                <button class="header__auth-btn">
-                    Вход\Регистрация
-                </button>
+            <div class="header__auth">
+                <span v-if="isAuth === false">
+                    <NuxtLink to="/users/profile"  class="header-auth__profile">
+                        <img src="~/assets/images/default-avatar.png" alt="avatar" class="header__avatar">
+                        <p>МОЙ ПРОФИЛЬ</p>
+                    </NuxtLink>
+                </span>
+                <span v-else>
+                    <NuxtLink to="/register">
+                        <button class="header__auth-btn btn">
+                            Вход\Регистрация
+                        </button>
+                    </NuxtLink>
+                </span>
             </div>
         </div>
     </header>
 </template>
 
-<script>
-
+<script setup>
+const isAuth = ref(false)
 </script>
 
 <style lang="scss" scoped>
@@ -39,7 +49,7 @@ $salat: #84C318;
 
 .header {
     background-color: black;
-    height: 60px;
+    height: 80px;
 
     .layout-container {
         display: grid;
@@ -50,6 +60,8 @@ $salat: #84C318;
     .header__logo {
         color: $red;
         font-family: "Prompt", sans-serif;
+        font-size: 30px;
+        font-weight: bold;
     }
 
     .header__nav {
@@ -61,6 +73,30 @@ $salat: #84C318;
     .header__auth {
         display: flex;
         color: white;
+        justify-content: end;
+
+        .header-auth__profile{
+            display: flex;
+            align-items: center;
+
+            .header__avatar{
+                max-width: 40px;
+                border-radius: 5px;
+                margin-right: 10px;
+            }
+        }
+
+        .header__auth-btn {
+            border: $red 1px solid;
+            padding: 10px;
+            transition: all ease-in-out 0.5s;
+        }
+
+        .header__auth-btn:hover {
+            background-color: $red;
+        }
     }
+
+
 }
 </style>

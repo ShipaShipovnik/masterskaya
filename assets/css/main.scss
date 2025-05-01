@@ -1,7 +1,7 @@
 $red: #dc3b46;
 $salat: #84c318;
 @import url("https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap");
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
 * {
   margin: 0;
   padding: 0;
@@ -32,4 +32,14 @@ a:hover {
   margin: 0 auto;
   // outline: 1px red solid;
   height: 100%;
+}
+
+.default-input {
+  border: 2px solid rgb(0, 0, 0, 30%);
+  padding: 10px 14px;
+  border-radius: 5px;
+}
+
+.btn{
+  border-radius: 5px;
 }
