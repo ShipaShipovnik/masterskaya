@@ -27,13 +27,13 @@
 </script>
 
 <style lang="scss" scoped>
-$red: #DC3B46;
-$salat: #84C318;
+$red: $red;
+$yellow: #ffe89c;
 
 .card {
     width: 260px;
     height: 350px;
-    background-color: white;
+    background-color: $white;
     border: 1px #999999 solid;
 
 
@@ -69,7 +69,7 @@ $salat: #84C318;
             }
 
             .card__price {
-                background-color: $salat;
+                background-color: $yellow;
                 padding: 0px 10px;
                 height: 30px;
             }

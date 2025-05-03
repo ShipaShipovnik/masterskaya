@@ -35,7 +35,7 @@
 
 .auth-form {
     grid-column: 4 / 9;
-    background-color: white;
+    background-color: $white;
     height: auto;
     padding: 20px;
     display: flex;
@@ -61,9 +61,9 @@
     }
 
     .auth-form__btn {
-        background-color: black;
+        background-color: $black;
         padding: 15px;
-        color: white;
+        color: $white;
         text-transform: uppercase;
     }
 

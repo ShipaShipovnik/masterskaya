@@ -16,9 +16,13 @@
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
+    "@iconify-json/material-symbols": "^1.2.20",
     "@iconify-json/meteor-icons": "^1.2.1",
     "@nuxtjs/tailwindcss": "6.11.4",
     "nuxt": "^3.16.2",
-    "sass-embedded": "^1.87.0"
+    "nuxt-svgo": "^4.1.0",
+    "sass": "^1.87.0",
+    "sass-embedded": "^1.87.0",
+    "sass-loader": "^16.0.5"
   }
 }

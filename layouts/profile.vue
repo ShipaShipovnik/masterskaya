@@ -18,8 +18,8 @@
 </script>
 
 <style lang="scss" scoped>
-$red: #DC3B46;
-$salat: #84C318;
+$red: $red;
+$yellow: #ffe89c;
 
 
 .wrapper {
@@ -30,7 +30,7 @@ $salat: #84C318;
 
 .background-banner {
     height: 300px;
-    background-color: yellow;
+    // background-color: yellow;
     position: relative;
     z-index: 1;
 }

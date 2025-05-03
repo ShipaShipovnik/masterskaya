@@ -14,8 +14,8 @@
 </script>
 
 <style lang="scss" scoped>
-$red: #DC3B46;
-$salat: #84C318;
+$red: $red;
+$yellow: #ffe89c;
 
 .wrapper {
     min-height: 100vh;

@@ -71,12 +71,12 @@ const handleTabChange = (tab) => {
     column-gap: 30px;
     max-width: 1200px;
     margin: 0 auto;
-    border: 1px green solid;
+    // border: 1px green solid;
     min-height: 1000px;
 }
 
 .profile-sidebar {
-    background-color: white;
+    background-color: $white;
     padding: 20px;
     grid-column: 1 / 4;
 
@@ -95,7 +95,7 @@ const handleTabChange = (tab) => {
 
         .profile-sidebar__tab-btn {
             width: 100%;
-            color: white;
+            color: $white;
             background-color: grey;
             text-transform: uppercase;
             padding: 10px 0;
@@ -107,7 +107,7 @@ const handleTabChange = (tab) => {
         .active-tab-btn {
             width: 100%;
             background-color: rgb(255, 255, 255);
-            color: black;
+            color: $black;
             border: 1px solid grey;
             padding: 15px 0;
         }
@@ -126,7 +126,7 @@ const handleTabChange = (tab) => {
 }
 
 .profile-content {
-    background-color: white;
+    background-color: $white;
     padding: 20px;
     grid-column: 4 / 13;
 }
