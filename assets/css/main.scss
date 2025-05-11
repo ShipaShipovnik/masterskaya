@@ -17,14 +17,17 @@ body {
   background-color: #f0f0f0;
 }
 
+// текст и ссылки
 a:hover {
   cursor: pointer;
+  text-decoration: underline;
 }
 
 .text-muted {
   color: rgb(0, 0, 0, 50%);
 }
 
+// контейнеры
 .layout-container {
   width: 1200px;
   margin: 0 auto;
@@ -32,12 +35,22 @@ a:hover {
   height: 100%;
 }
 
+// инпуты
 .default-input {
   border: 2px solid rgb(0, 0, 0, 30%);
-  padding: 10px 14px;
+  padding: 5px 14px;
   border-radius: 5px;
 }
 
+// инпуты
+.default-textarea {
+  border: 2px solid rgb(0, 0, 0, 30%);
+  padding: 10px 14px;
+  border-radius: 5px;
+  resize: vertical;
+}
+
+// кнопки
 .btn {
   border-radius: 5px;
   padding: 10px 10px;
@@ -56,14 +69,66 @@ a:hover {
   border: $red 1px solid;
 }
 
-// .hover-trans-05:{
-
-// }
-.hover-trans-05{
+// анимации
+.hover-trans-05 {
   transition: all ease-in-out 0.5s;
 }
 
-.section-subhead{
+// заголовки
+.section-subhead {
   font-size: 18px;
   font-weight: 600;
+}
+
+// формы
+.auth-form {
+  grid-column: 4 / 9;
+  background-color: $white;
+  height: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  .auth-form__title {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+  }
+
+  .auth-form__input-group {
+    display: block;
+
+    .auth-form__input {
+      width: 100%;
+    }
+  }
+
+  label {
+    color: rgb(0, 0, 0, 50%);
+  }
+
+  .auth-form__btn {
+    background-color: $black;
+    padding: 15px;
+    color: $white;
+    text-transform: uppercase;
+  }
+
+  .auth-form__subtext {
+    text-align: center;
+  }
+
+  .auth-form__subtext:hover {
+    text-decoration: underline;
+  }
+
+  .auth-messages {
+    .success-message {
+      color: green;
+    }
+    .error-message {
+      color: red;
+    }
+  }
 }

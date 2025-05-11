@@ -1,80 +1,82 @@
 <template>
     <div class="layout-container">
-        <div class="auth-form">
+        <form class="auth-form" @submit.prevent="signIn">
             <h2 class="auth-form__title">Войти</h2>
 
             <div class="auth-form__input-group">
-                <label for="">Почта:</label>
-                <input type="email" class="auth-form__input default-input">
+                <label for="email">Почта:</label>
+                <input type="email" class="auth-form__input default-input" v-model="email">
             </div>
             <div class="auth-form__input-group">
-                <label for="">Пароль:</label>
-                <input type="password" class="auth-form__input default-input">
+                <label for="password">Пароль:</label>
+                <input type="password" class="auth-form__input default-input" v-model="password">
             </div>
+
             <button class="auth-form__btn btn">
                 Войти
             </button>
 
-            <NuxtLink to="/register" class="auth-form__subtext text-muted">
-                Уже есть аккаунт? Войти.
-            </NuxtLink>
-        </div>
+            <!-- Сообщения об ошибках/успехе -->
+            <div class="auth-messages">
+                <p v-if="errorMsg" class="error-message">{{ errorMsg }}</p>
+                <p v-if="successMsg" class="success-message">{{ successMsg }}</p>
+            </div>
+
+            <p class="auth-form__subtext text-muted">
+                Нет аккаунта?
+                <NuxtLink to="/register" no-prefetch class="auth-form__link ">
+                    Зарегистрироваться.
+                </NuxtLink>
+            </p>
+        </form>
     </div>
 </template>
 
 <script setup>
+definePageMeta({
+    // layout: 'default',
+    middleware: 'guest',
+})
 
+const client = useSupabaseClient();
+
+// данные формы
+const email = ref("");
+const password = ref("")
+
+// сообщения
+const errorMsg = ref("")
+const successMsg = ref("")
+
+
+async function signIn() {
+    try {
+        errorMsg.value = "";
+        const { data, error } = await client.auth.signInWithPassword({
+            email: email.value,
+            password: password.value
+        });
+
+        if (error) throw error;
+
+        console.log('Успешный вход!', data);
+        successMsg.value = "Успешный вход!";
+        await navigateTo('/', { replace: true })
+    } catch (error) {
+        errorMsg.value = error.message
+        console.error("ОШИБКА ТАКАЯ" + errorMsg)
+    }
+}
 </script>
 
 <style lang="scss" scoped>
 .layout-container {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
-    padding-top: 200px;
+    padding-top: 80px;
 }
 
-.auth-form {
-    grid-column: 4 / 9;
-    background-color: $white;
-    height: auto;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-
-    .auth-form__title {
-        text-align: center;
-        font-size: 24px;
-        font-weight: bold;
-    }
-
-    .auth-form__input-group {
-        display: block;
-
-        .auth-form__input {
-            width: 100%;
-        }
-    }
-
-    label {
-        color: rgb(0, 0, 0, 50%);
-    }
-
-    .auth-form__btn {
-        background-color: $black;
-        padding: 15px;
-        color: $white;
-        text-transform: uppercase;
-    }
-
-
-    .auth-form__subtext {
-        text-align: center;
-    }
-
-    .auth-form__subtext:hover {
-        text-decoration: underline;
-    }
-
+.auth-messages {
+    color: black;
 }
 </style>

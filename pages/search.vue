@@ -6,17 +6,16 @@
             <div class="filters">
                 <div class="input-group">
                     <label for="">Цена:</label>
-                    <input type="number">р. - <input type="number">р.
+                    <input type="number" class="default-input">р. - <input type="number" class="default-input">р.
                 </div>
                 <label for="">Категория:</label>
-                <select name="" id="">
+                <select name="" id="" class="default-input">
                     <option value="" v-for="category in categories" :key="category.id">{{ category.title }}</option>
-
                 </select>
 
                 <div class="input-group">
                     <label for="">Cрок выполнения:</label>
-                    До <input type="text"> дней
+                    До <input type="text" class="default-input"> дней
                 </div>
 
             </div>
@@ -24,20 +23,10 @@
         <div class="search-content">
             <h1>РЕЗУЛЬТАТЫ ПОИСКА: </h1>
             <div class="search-header">
-                <input type="text" placeholder="Название услуги"> <button type="submit">Искать</button>
+                <input type="text" placeholder="Название услуги" class="default-input"> <button type="submit">Искать</button>
             </div>
             <div class="search-content__results">
-                <!-- <li v-for="category in categories" :key="category.id">
-                    {{ category.title }}
-                </li> -->
-                Категории:
-                {{ categories }}
-                <!-- Ошибки:
-                {{ errors }} -->
-                <!-- <li v-for="error in errors" :key="error.id">
-                    
-                </li> -->
-
+             
             </div>
 
         </div>
@@ -47,12 +36,21 @@
 <script setup>
 const client = useSupabaseClient()
 const categories = ref([])
-// const errors = ref([])
+
 
 async function getCategories() {
-    const { data, error } = await client.from('categories').select()
-    categories.value = data
-    console.error(error)
+    const { data, error } = await client.from('categories').select();
+
+    if (error) {
+        console.error('Error fetching categories:', error);
+        return;
+    }
+
+    if (data) {
+        categories.value = data;
+    } else {
+        console.warn('No categories found.');
+    }
 }
 onMounted(() => {
     getCategories()
