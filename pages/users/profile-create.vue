@@ -24,9 +24,15 @@
                 <input type="text" class="default-input" v-model="username" required>
             </div>
             <div class="profile-create__input-group">
+                <label>Спелизация:</label>
+                <p class="profile-create__input-subtext">Опишите в чем вы специализируетесь.
+                </p>
+                <input type="text" class="default-input" v-model="job" required>
+            </div>
+            <div class="profile-create__input-group">
                 <label>Описание профиля:</label>
                 <p class="profile-create__input-subtext">Кратко опишите себя и чем вы занимаетесь.</p>
-                <textarea v-model="about" class="default-textarea"></textarea>
+                <textarea v-model="description" class="default-textarea"></textarea>
             </div>
 
             <!-- контакты -->
@@ -72,7 +78,8 @@ const currentUser = authData.user
 const avatarFile = ref("")
 const publicName = ref("")
 const username = ref("")
-const about = ref("")
+const description = ref("")
+const job = ref("")
 const contacts = ref({
     telegram: '',
     odnoklassniki: '',
@@ -88,7 +95,8 @@ async function createProfile() {
                 user_id: currentUser.id, 
                 public_name: publicName.value,
                 username: username.value,
-                description: about.value,
+                description: description.value,
+                job: job.value,
                 contacts: { 
                     telegram: contacts.value.telegram,
                     vkontakte: contacts.value.vkontakte,
@@ -99,7 +107,7 @@ async function createProfile() {
         console.log('Профиль успешно создан/обновлен!')
 
         // Перенаправляем на профиль после создания
-        await navigateTo(`/profile/${username.value}`)
+        await navigateTo(`/users/profile/${username.value}`)
     } catch (error) {
         errorMsg.value = error.message
         console.error('Ошибка:', error.message)

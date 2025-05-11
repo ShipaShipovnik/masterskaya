@@ -46,7 +46,7 @@
                 <div class="profile-content__tab" id="about" v-else>
                     <section class="profile-content__about-me">
                         <h2>Обо мне:</h2>
-                        <p>{{ profile?.about || 'Пользователь пока не добавил информацию о себе' }}</p>
+                        <p>{{ profile?.description || 'Пользователь пока не добавил информацию о себе' }}</p>
                     </section>
                     <!-- <section class="profile-content__about-socials">
                     <h2>Контакты и соц-сети:</h2>

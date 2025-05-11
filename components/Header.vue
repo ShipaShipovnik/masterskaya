@@ -41,6 +41,10 @@
         <!-- Dropdown Menu -->
         <div class="dropdown-menu" :class="{ 'dropdown-open': isMenuOpen }" v-if="isMenuOpen" @click.stop>
             <div class="dropdown-content">
+                <NuxtLink to="/users/profile" class="header-auth__profile dropdown-item">
+                    <img src="~/assets/images/default-avatar.png" alt="avatar" class="header__avatar"> {{ user.name }}
+                </NuxtLink>
+                <hr class="dropdown-divider">
                 <NuxtLink to="/" class="dropdown-item" @click="closeMenu">
                     Создать профиль Заказчика
                 </NuxtLink>
