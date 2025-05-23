@@ -3,7 +3,7 @@
         <div class="profile-container">
             <div class="profile-sidebar">
                 <div class="profile-sidebar__avatar">
-                    <img :src="profile?.avatar_url || '/default-avatar.jpg'" alt="Аватар">
+                    <img :src="profile?.avatar_url || defaultAvatar" alt="Аватар">
                 </div>
                 <p class="profile-sidebar__name">{{ profile?.public_name || username }}</p>
                 <p class="profile-sidebar__job text-muted">{{ profile?.job || 'Должность не указана' }}</p>
@@ -40,7 +40,18 @@
                 </div>
 
                 <div class="profile-content__tab" id="services" v-else-if="activeTab === 'services'">
-                    <ServiceCard />
+                    <div v-if="isOwner" class="owner-actions">
+                        <button @click="navigateTo('/services/add')" class="btn-red edit-btn ">
+                            Добавить услугу
+                        </button>
+                    </div>
+                    <div class="services-container">
+                        <ServiceCard v-for="service in services" :key="service.id" :service="service" />
+                        <div v-if="!loading && services.length === 0" class="empty-state">
+                            У этого мастера пока нет услуг
+                        </div>
+                    </div>
+
                 </div>
 
                 <div class="profile-content__tab" id="about" v-else>
@@ -69,53 +80,80 @@ definePageMeta({
     layout: 'profile',
 })
 
+import defaultAvatar from '@/assets/images/default-avatar.png'
+
 const client = useSupabaseClient()
 const user = useSupabaseUser() //авторизированый юзер
 const { username } = useRoute().params //юзернейм на профиль кторого хочу перейти щас
 
-// Состояния
+const services = ref([])
+const loading = ref({
+    profile: true,
+    services: true
+})
+const error = ref(null)
 const activeTab = ref('gallery')
 const profile = ref(null)
-const isOwner = ref(false)
+const isOwner = computed(() =>
+    user.value?.id === profile.value?.user_id
+)
 const errorMessage = ref('')
 
-// запрос данных
+// Загрузка данных профиля
 const { data } = await useAsyncData(`profile-${username}`, async () => {
-    const { data, error } = await client
-        .from('master_profiles')
-        .select('*')
-        .eq('username', username)
-        .single()
+    try {
+        const { data, error } = await client
+            .from('master_profiles')
+            .select('*')
+            .eq('username', username)
+            .single()
 
-    console.log('Ответ от API:', { data, error })
-    if (error) {
-        console.error('Ошибка загрузки профиля', error.message)
+        if (error) throw error
+        return data
+    } catch (err) {
+        error.value = err.message
+        console.error('Ошибка загрузки профиля:', err)
         return null
+    } finally {
+        loading.value.profile = false
     }
-
-    return data
 })
 
 profile.value = data.value
+const fetchMasterServices = async () => {
+    if (!profile.value?.id) return
 
+    try {
+        loading.value.services = true
+        const { data, error } = await client
+            .from('services')
+            .select(`
+                *,
+                categories (
+                    title
+                )
+            `)
+            .eq('master_id', profile.value.id)
+            .order('created_at', { ascending: false })
 
-// Проверяем владельца
-if (user.value && profile.value) {
-    isOwner.value = user.value.id === profile.value.user_id
+        if (error) throw error
+        services.value = data || []
+    } catch (err) {
+        error.value = err.message
+        console.error('Ошибка загрузки услуг:', err)
+    } finally {
+        loading.value.services = false
+    }
 }
+// Загружаем услуги при изменении профиля
+watch(() => profile.value?.id, fetchMasterServices, { immediate: true })
 
-const handleTabChange = (tab) => {
-    activeTab.value = tab
-    console.log('Вкладка' + tab)
-}
-
-
-//realtime
+// Realtime обновления
 onMounted(() => {
-    if (!username || errorMessage.value) return
+    if (!username) return
 
     const channel = client
-        .channel('profile-changes')
+        .channel('profile-updates')
         .on('postgres_changes', {
             event: 'UPDATE',
             schema: 'public',
@@ -126,10 +164,12 @@ onMounted(() => {
         })
         .subscribe()
 
-    onUnmounted(() => {
-        client.removeChannel(channel)
-    })
+    onUnmounted(() => client.removeChannel(channel))
 })
+
+const handleTabChange = (tab) => {
+    activeTab.value = tab
+}
 </script>
 
 <style lang="scss" scoped>
@@ -219,15 +259,10 @@ onMounted(() => {
     .edit-btn {
         width: 100%;
         padding: 10px;
-        background-color: #f0f0f0;
-        border: 1px solid #ddd;
         border-radius: 5px;
         cursor: pointer;
         transition: background-color 0.3s;
 
-        &:hover {
-            background-color: #e0e0e0;
-        }
     }
 }
 
@@ -237,5 +272,12 @@ onMounted(() => {
         height: 100%;
         object-fit: cover;
     }
+}
+
+.services-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+
+    row-gap: 20px;
 }
 </style>

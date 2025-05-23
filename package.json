@@ -20,14 +20,16 @@
     "@iconify-json/meteor-icons": "^1.2.1",
     "@nuxtjs/supabase": "^1.5.0",
     "@nuxtjs/tailwindcss": "6.11.4",
+    "@pinia/nuxt": "^0.11.0",
     "nuxt": "^3.16.2",
     "nuxt-svgo": "^4.1.0",
+    "pinia": "^3.0.2",
     "sass": "^1.87.0",
     "sass-embedded": "^1.87.0",
     "sass-loader": "^16.0.5",
     "supabase": "^2.22.12"
   },
-  "overrides":{
+  "overrides": {
     "cookie": "0.7.2"
   }
 }

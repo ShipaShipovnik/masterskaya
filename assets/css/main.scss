@@ -24,7 +24,7 @@ p{
 // текст и ссылки
 a:hover {
   cursor: pointer;
-  text-decoration: underline;
+  // text-decoration: underline;
 }
 
 .text-muted {
@@ -84,6 +84,7 @@ a:hover {
 .section-subhead {
   font-size: 18px;
   font-weight: 600;
+  margin-bottom: 15px;
 }
 
 // формы

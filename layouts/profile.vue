@@ -15,6 +15,12 @@
 </template>
 
 <script setup>
+const profileStore = useProfileStore()
+
+watchEffect(() => {
+    console.log('[Layout] Auth state changed:', profileStore.isAuthenticated)
+    console.log('[Layout] Active profile:', profileStore.activeProfile)
+})
 </script>
 
 <style lang="scss" scoped>

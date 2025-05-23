@@ -41,9 +41,19 @@
         <!-- Dropdown Menu -->
         <div class="dropdown-menu" :class="{ 'dropdown-open': isMenuOpen }" v-if="isMenuOpen" @click.stop>
             <div class="dropdown-content">
-                <NuxtLink to="/users/profile" class="header-auth__profile dropdown-item">
-                    <img src="~/assets/images/default-avatar.png" alt="avatar" class="header__avatar"> {{ user.name }}
+                <NuxtLink :to="`/users/profile/${profileStore.username}`" class="header-auth__profile dropdown-item">
+                    <img src="~/assets/images/default-avatar.png" alt="avatar" class="header__avatar">
+                    {{ profileStore.username }} <br>
+                    {{ profileStore.publicName }}
                 </NuxtLink>
+                <hr class="dropdown-divider">
+                <button @click="profileStore.loadProfile('master')">
+                    Переключиться на Мастера
+                </button>
+                <hr class="dropdown-divider">
+                <button @click="profileStore.loadProfile('customer')">
+                    Переключиться на Заказчика
+                </button>
                 <hr class="dropdown-divider">
                 <NuxtLink to="/" class="dropdown-item" @click="closeMenu">
                     Создать профиль Заказчика
@@ -70,6 +80,14 @@ const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 const isAuth = computed(() => !!user.value)
 const successMsg = ref('');
+
+const profileStore = useProfileStore()
+
+onMounted(async () => {
+    await profileStore.init()
+})
+
+
 
 // меню
 let isMenuOpen = ref(false)
@@ -110,6 +128,9 @@ async function logout() {
         console.log(error)
     }
 }
+
+
+
 </script>
 
 <style lang="scss" scoped>

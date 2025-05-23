@@ -15,24 +15,24 @@
             <div class="profile-create__input-group">
                 <label>Публичное имя:</label>
                 <p class="profile-create__input-subtext">Данное имя будет отображаться в вашем профиле.</p>
-                <input type="text" class="default-input" v-model="publicName">
+                <input type="text" class="default-input" v-model="form.public_name">
             </div>
             <div class="profile-create__input-group">
                 <label>Юзернейм:</label>
                 <p class="profile-create__input-subtext">Данное имя будет служить в качестве ссылки на ваш профиль.
                 </p>
-                <input type="text" class="default-input" v-model="username" required>
+                <input type="text" class="default-input" v-model="form.username" required>
             </div>
             <div class="profile-create__input-group">
                 <label>Спелизация:</label>
                 <p class="profile-create__input-subtext">Опишите в чем вы специализируетесь.
                 </p>
-                <input type="text" class="default-input" v-model="job" required>
+                <input type="text" class="default-input" v-model="form.job" required>
             </div>
             <div class="profile-create__input-group">
                 <label>Описание профиля:</label>
                 <p class="profile-create__input-subtext">Кратко опишите себя и чем вы занимаетесь.</p>
-                <textarea v-model="description" class="default-textarea"></textarea>
+                <textarea v-model="form.description" class="default-textarea"></textarea>
             </div>
 
             <!-- контакты -->
@@ -42,15 +42,15 @@
 
                 <div class="input-group">
                     <label>Telegram:</label>
-                    <input type="text" class="default-input" v-model="contacts.telegram">
+                    <input type="text" class="default-input" v-model="form.contacts.telegram">
                 </div>
                 <div class="input-group">
                     <label>ВКонтакте:</label>
-                    <input type="text" class="default-input" v-model="contacts.vkontakte">
+                    <input type="text" class="default-input" v-model="form.contacts.vkontakte">
                 </div>
                 <div class="input-group">
                     <label>Одноклассники:</label>
-                    <input type="text" class="default-input" v-model="contacts.odnoklassniki">
+                    <input type="text" class="default-input" v-model="form.contacts.odnoklassniki">
                 </div>
             </div>
 
@@ -66,54 +66,90 @@ definePageMeta({
     middleware: 'auth',
 })
 const client = useSupabaseClient()
+const user = useSupabaseUser()
+const router = useRouter()
 
 const errorMsg = ref("")
+const isLoading = ref(false)
 
-
-// Получаем текущего пользователя
-const { data: authData } = await client.auth.getUser()
-const currentUser = authData.user
-// console.log('Current user ID:', (await client.auth.getUser()).data.user?.id);
-
-const avatarFile = ref("")
-const publicName = ref("")
-const username = ref("")
-const description = ref("")
-const job = ref("")
-const contacts = ref({
-    telegram: '',
-    odnoklassniki: '',
-    vkontakte: '',
+// Форма профиля
+const form = ref({
+    public_name: '',
+    username: '',
+    description: '',
+    job: '',
+    contacts: {
+        telegram: '',
+        vkontakte: '',
+        odnoklassniki: ''
+    }
 })
 
-async function createProfile() {
-    try {
 
-        const { error } = await client
+const validateUsername = async () => {
+    if (!form.value.username) return
+
+    const { data, error } = await client
+        .from('master_profiles')
+        .select('username')
+        .eq('username', form.value.username)
+
+    if (error) {
+        errorMsg.value = 'Ошибка проверки username'
+        return false
+    }
+
+    if (data.length > 0) {
+        errorMsg.value = 'Этот username уже занят'
+        return false
+    }
+
+    errorMsg.value = ''
+    return true
+}
+
+// Создание профиля
+const createProfile = async () => {
+    try {
+        isLoading.value = true
+        errorMsg.value = ''
+
+        // Проверяем username
+        const isUsernameValid = await validateUsername()
+        if (!isUsernameValid) return
+
+        // Создаем/обновляем профиль
+        const { error: profileError } = await client
             .from('master_profiles')
             .upsert({
-                user_id: currentUser.id, 
-                public_name: publicName.value,
-                username: username.value,
-                description: description.value,
-                job: job.value,
-                contacts: { 
-                    telegram: contacts.value.telegram,
-                    vkontakte: contacts.value.vkontakte,
-                    odnoklassniki: contacts.value.odnoklassniki
-                }
+                user_id: user.value.id,
+                ...form.value
             })
-        if (error) throw error
-        console.log('Профиль успешно создан/обновлен!')
 
-        // Перенаправляем на профиль после создания
-        await navigateTo(`/users/profile/${username.value}`)
+        if (profileError) throw profileError
+
+        // Обновляем метаданные профиля
+        const { error: metaError } = await client
+            .from('profiles_meta')
+            .upsert({
+                user_id: user.value.id,
+                profile_type: 'master'
+            })
+
+        if (metaError) throw metaError
+
+        // Перенаправляем на новый профиль
+        await navigateTo(`/users/profile/${form.value.username}`)
+
     } catch (error) {
-        errorMsg.value = error.message
-        console.error('Ошибка:', error.message)
+        errorMsg.value = error.message || 'Произошла ошибка при создании профиля'
+        console.error('Ошибка:', error)
+    } finally {
+        isLoading.value = false
     }
 }
 </script>
+
 
 <style lang="scss" scoped>
 .profile-create__form {

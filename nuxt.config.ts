@@ -3,13 +3,14 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: false },
   css: ['~/assets/css/main.scss'],
-  // debug: true,
+  debug: false,
   modules: [
     '@nuxtjs/tailwindcss',
     '@nuxt/icon',
     '@nuxt/image',
     'nuxt-svgo',
     '@nuxtjs/supabase',
+    '@pinia/nuxt'
   ],
   app: {
     head: {

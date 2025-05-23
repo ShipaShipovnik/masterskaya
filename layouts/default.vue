@@ -3,6 +3,9 @@
 
         <Header />
         <main class="main">
+            <!-- <div v-if="profileStore.loading" class="global-loading">
+                Загрузка данных...
+            </div> -->
             <slot />
         </main>
 
@@ -11,6 +14,12 @@
 </template>
 
 <script setup>
+const profileStore = useProfileStore()
+
+watchEffect(() => {
+    console.log('[Layout] Auth state changed:', profileStore.isAuthenticated)
+    console.log('[Layout] Active profile:', profileStore.activeProfile)
+})
 </script>
 
 <style lang="scss" scoped>
