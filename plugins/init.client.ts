@@ -1,43 +1,50 @@
 export default defineNuxtPlugin(async (nuxtApp) => {
     const profileStore = useProfileStore()
+    const supabase = useSupabaseClient()
 
-    // Инициализация при старте приложения
+    // 1. Инициализация при старте
     await profileStore.init()
 
-    // Автоматическая подписка на изменения аутентификации
-    const { data: { subscription } } = useSupabaseClient().auth.onAuthStateChange(() => {
-        profileStore.init()
-    })
-
-    // Реалтайм-обновления профиля
-    let channel: any = null
+    // 2. Реалтайм-подписка на профиль
+    let channel: ReturnType<typeof supabase.channel> | null = null
 
     const initRealtime = () => {
-        if (!profileStore.user?.id) return
+        // Отписываемся от старой подписки
+        channel?.unsubscribe()
 
-        channel = useSupabaseClient().channel('profile-updates')
+        // Если пользователь не авторизован или нет активной роли - выходим
+        if (!profileStore.user?.id || !profileStore.activeRole) return
+
+        // Подписываемся на изменения нужной таблицы
+        channel = supabase.channel('profile-updates')
             .on('postgres_changes', {
                 event: '*',
                 schema: 'public',
-                table: 'master_profiles',
+                table: `${profileStore.activeRole}_profiles`,
                 filter: `user_id=eq.${profileStore.user.id}`
             }, (payload) => {
-                console.log('Realtime update:', payload)
-                if (profileStore.activeRole === 'master') {
-                    profileStore.activeProfile = payload.new
-                }
+                console.log('Realtime profile update:', payload)
+                profileStore.activeProfile = payload.new
             })
             .subscribe()
     }
 
-    // Инициализируем при монтировании
-    nuxtApp.hook('app:mounted', () => {
+    // 3. Обработчик изменения авторизации
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
+        console.log('Auth state changed:', event)
+        await profileStore.init()
         initRealtime()
     })
 
-    // Очистка при закрытии
-    window.addEventListener('beforeunload', () => {
+    // 4. Инициализация при монтировании
+    nuxtApp.hook('app:mounted', initRealtime)
+
+    // 5. Очистка
+    nuxtApp.hook('app:beforeMount', () => {
         subscription?.unsubscribe()
         channel?.unsubscribe()
     })
+
+    // Для дебага
+    console.log('Profile plugin initialized')
 })

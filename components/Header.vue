@@ -41,25 +41,30 @@
         <!-- Dropdown Menu -->
         <div class="dropdown-menu" :class="{ 'dropdown-open': isMenuOpen }" v-if="isMenuOpen" @click.stop>
             <div class="dropdown-content">
-                <NuxtLink :to="`/users/profile/${profileStore.username}`" class="header-auth__profile dropdown-item">
+                <NuxtLink :to="`/users/${activeRole}/${profileStore.username}`"
+                    class="header-auth__profile dropdown-item">
                     <img src="~/assets/images/default-avatar.png" alt="avatar" class="header__avatar">
-                    {{ profileStore.username }} <br>
-                    {{ profileStore.publicName }}
+                    <span>
+                        <p class="text-muted">{{ profileStore.username }}</p>
+                        <p> {{ profileStore.publicName }}</p>
+                    </span>
                 </NuxtLink>
                 <hr class="dropdown-divider">
-                <button @click="profileStore.loadProfile('master')">
-                    Переключиться на Мастера
+                <!--  -->
+                <button @click="switchRole('master')" v-if="activeRole === 'customer'" class="dropdown-item">
+                    Стать Мастером
                 </button>
-                <hr class="dropdown-divider">
-                <button @click="profileStore.loadProfile('customer')">
-                    Переключиться на Заказчика
+                <button @click="switchRole('customer')" v-if="activeRole === 'master'" class="dropdown-item">
+                    Стать Заказчиком
                 </button>
+                <!--  -->
                 <hr class="dropdown-divider">
-                <NuxtLink to="/" class="dropdown-item" @click="closeMenu">
+                <hr class="dropdown-divider">
+                <NuxtLink to="/users/profile-create-customer" class="dropdown-item" @click="closeMenu">
                     Создать профиль Заказчика
                 </NuxtLink>
                 <hr class="dropdown-divider">
-                <NuxtLink to="/users/profile-create" class="dropdown-item" @click="closeMenu">
+                <NuxtLink to="/users/profile-create-master" class="dropdown-item" @click="closeMenu">
                     Создать профиль Мастера
                 </NuxtLink>
                 <hr class="dropdown-divider">
@@ -75,7 +80,7 @@
     </header>
 </template>
 
-<script setup>
+<script setup lang="ts">
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 const isAuth = computed(() => !!user.value)
@@ -83,11 +88,21 @@ const successMsg = ref('');
 
 const profileStore = useProfileStore()
 
+const activeRole = profileStore.activeRole
+
 onMounted(async () => {
     await profileStore.init()
 })
 
 
+const switchRole = async (targetRole: 'master' | 'customer') => {
+  // 1. Сохраняем выбранную роль в localStorage
+  localStorage.setItem('preferredRole', targetRole);
+  
+  // 2. Перезагружаем страницу
+  window.location.href = `/users/${targetRole}/${profileStore.username}`;
+
+}
 
 // меню
 let isMenuOpen = ref(false)
@@ -264,6 +279,17 @@ async function logout() {
         display: flex;
         flex-direction: column;
         padding: 8px 0;
+    }
+
+    .dropdown-item:first-child {
+        img {
+            width: 50px;
+            aspect-ratio: 1 / 1;
+        }
+
+        gap: 10px;
+        display: flex;
+        align-content: center;
     }
 
     .dropdown-item {

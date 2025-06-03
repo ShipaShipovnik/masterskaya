@@ -16,9 +16,15 @@
 <script setup>
 const profileStore = useProfileStore()
 
+// Только логирование (без инициализации)
 watchEffect(() => {
-    console.log('[Layout] Auth state changed:', profileStore.isAuthenticated)
-    console.log('[Layout] Active profile:', profileStore.activeProfile)
+    if (process.client) { // Только на клиенте
+        console.log('[Layout] Current state:', {
+            isAuth: profileStore.isAuthenticated,
+            role: profileStore.activeRole,
+            profile: profileStore.activeProfile
+        })
+    }
 })
 </script>
 

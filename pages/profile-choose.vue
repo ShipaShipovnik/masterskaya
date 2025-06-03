@@ -26,7 +26,7 @@
             </ul>
 
             <NuxtLink to="/users/profile-create-customer">
-                <button class="btn btn-red" disabled>Создать профиль Заказчика</button>
+                <button class="btn btn-red">Создать профиль Заказчика</button>
             </NuxtLink>
         </div>
     </div>

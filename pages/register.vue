@@ -65,7 +65,7 @@ async function signUp() {
 
             console.log('Успешная регистрация!', data);
             successMsg.value = "Успешная регистрация!";
-            await navigateTo('/users/profile-create', { replace: true })
+            await navigateTo('/profile-choose', { replace: true })
         } catch (error) {
             errorMsg.value = error.message
             console.error("ОШИБКА " + error.message)

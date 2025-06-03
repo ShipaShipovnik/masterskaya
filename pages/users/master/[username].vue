@@ -7,6 +7,7 @@
                 </div>
                 <p class="profile-sidebar__name">{{ profile?.public_name || username }}</p>
                 <p class="profile-sidebar__job text-muted">{{ profile?.job || 'Должность не указана' }}</p>
+
                 <div class="profile-sidebar__tabs">
                     <button class="profile-sidebar__tab-btn btn" :class="{ 'active-tab-btn': activeTab === 'gallery' }"
                         @click="handleTabChange('gallery')">Галлерея</button>
@@ -30,7 +31,7 @@
                 </div>
 
             </div>
-            <div class="profile-content">
+            <div class="profile-content" v-if="role === master">
 
                 <div class="profile-content__tab active-tab" id="gallery" v-if="activeTab === 'gallery'">
                     <div class="profile-content__gallery-img"></div>
@@ -65,6 +66,7 @@
                 </section> -->
                 </div>
             </div>
+
         </div>
     </template>
     <template v-else>
