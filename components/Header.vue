@@ -42,7 +42,7 @@
         <div class="dropdown-menu" :class="{ 'dropdown-open': isMenuOpen }" v-if="isMenuOpen" @click.stop>
             <div class="dropdown-content">
                 <NuxtLink :to="`/users/${activeRole}/${username}`" class="header-auth__profile dropdown-item">
-                    <img src="~/assets/images/default-avatar.png" alt="avatar" class="header__avatar">
+                    <img :src="avatarUrl || '~/assets/images/default-avatar.png'" alt=" Аватар">
                     <span>
                         <p class="text-muted">{{ username }}</p>
                         <p> {{ publicName }}</p>

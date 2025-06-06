@@ -2,8 +2,13 @@
     <form @submit.prevent="createCustomerProfile" class="profile-create__form">
         <div class="profile-create__input-group">
             <label>Аватар:</label>
-            <p class="profile-create__input-subtext">Не больше мб.</p>
-            <input type="file" class="default-input" id="">
+            <avatarUploader @file-selected="handleFileSelected" />
+            <p class="profile-create__input-subtext">Не больше 5 мб.</p>
+
+            <div v-if="uploadError" class="error-message">
+                {{ uploadError }}
+            </div>
+
         </div>
         <!-- публичное имя -->
         <div class="profile-create__input-group">
@@ -26,9 +31,9 @@
 <!-- TODO: реактивная проверка на никнейм в реальном времени времени -->
 <script setup>
 definePageMeta({
-    layout: 'default',
-    middleware: 'auth',
-})
+    middleware: ['auth']
+});
+
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 const profileStore = useProfileStore()
@@ -36,6 +41,8 @@ const router = useRouter()
 
 const errorMsg = ref("")
 const isLoading = ref(false)
+const uploadError = ref(null)
+
 
 // Форма профиля
 const form = ref({
@@ -43,11 +50,22 @@ const form = ref({
     username: '',
 })
 
+const avatarFile = ref < File | null > (null)
+
+const handleFileSelected = (file) => {
+    // получает файл
+    console.log('получаем файл ', file.name)
+    avatarFile.value = file
+}
+
 // Создание профиля
 const createProfile = async () => {
     try {
         const supabase = useSupabaseClient()
         const user = useSupabaseUser()
+
+        isLoading.value = true
+        uploadError.value = null
 
         // Проверяем роль в JWT
         const currentRole = user.value?.user_metadata?.current_role
@@ -55,12 +73,50 @@ const createProfile = async () => {
             throw new Error('в jwt user_metadata роль не кастомер')
         }
 
-        //Создаем профиль
+        // 1. Сначала загружаем аватар (если есть)========================
+        let avatarUrl = null
+        if (avatarFile.value) {
+            try {
+                // Создаем безопасное имя файла
+                const fileExt = avatarFile.value.name.split('.').pop()
+                const fileName = `${user.value.id}_${Date.now()}.${fileExt}`
+                const filePath = `customer_avatars/${fileName}`
+
+                // Загружаем файл с обработкой CORS
+                const { error: uploadError } = await supabase.storage
+                    .from('avatars')
+                    .upload(filePath, avatarFile.value, {
+                        cacheControl: '3600',
+                        contentType: avatarFile.value.type || 'image/jpeg',
+                        upsert: true
+                    })
+
+                if (uploadError) {
+                    console.error('Ошибка загрузки:', uploadError)
+                    throw new Error('Не удалось загрузить аватар')
+                }
+
+                // Получаем ПОСТОЯННЫЙ URL
+                const { data: { publicUrl } } = supabase.storage
+                    .from('avatars')
+                    .getPublicUrl(filePath)
+
+                form.value.avatar_url = publicUrl
+
+            } catch (error) {
+                console.error('Ошибка загрузки аватара:', error)
+                throw new Error('Проблема с загрузкой аватара')
+            }
+        }
+
+        //Создаем профиль ====================================================
+        console.log('Отправка формы', form.value)
+
         const { data: profile, error } = await supabase
             .from('customer_profiles')
             .insert({
                 user_id: user.value.id,
-                ...form.value
+                ...form.value,
             })
             .select()
             .single()
@@ -69,7 +125,7 @@ const createProfile = async () => {
 
         //Обновляем JWT с ID профиля
         await supabase.auth.updateUser({
-            data: { current_profile_id: profile.id }
+            data: { current_profile_id: profile.id },
         })
 
         await navigateTo(`/users/customer/${profile.username}`)
@@ -80,6 +136,8 @@ const createProfile = async () => {
         if (err.message.includes('выберите роль')) {
             await navigateTo('/profile-choose')
         }
+    } finally {
+        isLoading.value = false
     }
 }
 </script>

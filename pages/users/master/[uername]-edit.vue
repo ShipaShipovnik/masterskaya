@@ -2,13 +2,13 @@
   <form @submit.prevent="createProfile" class="profile-create__form">
     <div class="profile-create__input-group">
       <label>Аватар:</label>
-      <avatarUploader @file-selected="handleFileSelected" />
-      <p class="profile-create__input-subtext">Не больше 5 мб.</p>
 
-      <div v-if="uploadError" class="error-message">
-        {{ uploadError }}
-      </div>
+      <avatarUploader :url="form.avatar_url" @update="(file) => {
+        form.avatar_file = file;
+        form.avatar_url = null;
+      }" />
 
+      <p class="profile-create__input-subtext">Не больше мб.</p>
     </div>
     <!-- публичное имя -->
     <div class="profile-create__input-group">
@@ -53,7 +53,7 @@
       </div>
     </div>
 
-    <button class="btn btn-red">{{ isLoading ? 'Загрузка...' : 'Создать профиль Мастера' }}</button>
+    <button class="btn btn-red">Создать профиль Мастера</button>
   </form>
 </template>
 <!-- TODO: реактивная проверка на никнейм в реальном времени времени -->
@@ -69,7 +69,6 @@ const router = useRouter()
 
 const errorMsg = ref("")
 const isLoading = ref(false)
-const uploadError = ref(null)
 
 // Форма профиля
 const form = ref({
@@ -77,7 +76,7 @@ const form = ref({
   username: '',
   description: '',
   job: '',
-  avatar_url: '',
+  avatar_file: null,
   contacts: {
     telegram: '',
     vkontakte: '',
@@ -85,22 +84,11 @@ const form = ref({
   }
 })
 
-const avatarFile = ref<File | null>(null)
-
-const handleFileSelected = (file) => {
-  // получает файл
-  console.log('получаем файл ', file.name)
-  avatarFile.value = file
-}
-
 // Создание профиля
 const createProfile = async () => {
   try {
     const supabase = useSupabaseClient()
     const user = useSupabaseUser()
-
-    isLoading.value = true
-    uploadError.value = null
 
     // Проверяем роль в JWT
     const currentRole = user.value?.user_metadata?.current_role
@@ -108,50 +96,40 @@ const createProfile = async () => {
       throw new Error('в jwt user_metadata роль не мастер')
     }
 
-    // 1. Сначала загружаем аватар (если есть)========================
+    // загрузка аватара
     let avatarUrl = null
-    if (avatarFile.value) {
+    if (form.value.avatar_file) {
+      const fileExt = form.value.avatar_file.name.split('.').pop()
+      const fileName = `${user.value.id}-${Date.now()}.${fileExt}`
+      const filePath = `master_avatars/${user.value.id}/${fileName}`
+
       try {
-        // Создаем безопасное имя файла
-        const fileExt = avatarFile.value.name.split('.').pop()
-        const fileName = `${user.value.id}_${Date.now()}.${fileExt}`
-        const filePath = `master_avatars/${fileName}`
-
-        // Загружаем файл с обработкой CORS
-        const { error: uploadError } = await supabase.storage
+        const { error: avatarError } = await supabase.storage
           .from('avatars')
-          .upload(filePath, avatarFile.value, {
-            cacheControl: '3600',
-            contentType: avatarFile.value.type || 'image/jpeg',
-            upsert: true
-          })
+          .upload(filePath, form.value.avatar_file)
+        if (avatarError) throw avatarError
 
-        if (uploadError) {
-          console.error('Ошибка загрузки:', uploadError)
-          throw new Error('Не удалось загрузить аватар')
-        }
-
-        // Получаем ПОСТОЯННЫЙ URL
-        const { data: { publicUrl } } = supabase.storage
-          .from('avatars')
-          .getPublicUrl(filePath)
-
-        form.value.avatar_url = publicUrl
-
-      } catch (error) {
-        console.error('Ошибка загрузки аватара:', error)
-        throw new Error('Проблема с загрузкой аватара')
+      } catch (avatarError) {
+        console.error('[avatar upload] не получилось загрузить в базу')
       }
+
+      // Получаем публичный URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath)
+
+      avatarUrl = publicUrl
     }
 
-    //Создаем профиль ====================================================
-    console.log('Отправка формы', form.value)
 
+    //Создаем профиль
     const { data: profile, error } = await supabase
       .from('master_profiles')
       .insert({
         user_id: user.value.id,
+        avatar_url: avatarUrl,
         ...form.value,
+        avatar_file: undefined
       })
       .select()
       .single()
@@ -171,8 +149,6 @@ const createProfile = async () => {
     if (err.message.includes('выберите роль')) {
       await navigateTo('/profile-choose')
     }
-  } finally {
-    isLoading.value = false
   }
 }
 </script>
