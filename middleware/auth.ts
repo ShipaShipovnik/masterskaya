@@ -1,8 +1,14 @@
 export default defineNuxtRouteMiddleware(async (to) => {
     const client = useSupabaseClient()
-    const { data: { user }, error } = await client.auth.getUser()
+    const user = useSupabaseUser()
 
-    if (!user) {
-        return navigateTo('login?redirect=' + to.path)
+    // Пропускаем маршруты регистрации/входа
+    if (['/register', '/login'].includes(to.path)) {
+        return
+    }
+
+    // Если пользователь не авторизован
+    if (!user.value) {
+        return navigateTo('/login')
     }
 })

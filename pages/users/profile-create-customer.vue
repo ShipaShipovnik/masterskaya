@@ -29,8 +29,9 @@ definePageMeta({
     layout: 'default',
     middleware: 'auth',
 })
-const client = useSupabaseClient()
+const supabase = useSupabaseClient()
 const user = useSupabaseUser()
+const profileStore = useProfileStore()
 const router = useRouter()
 
 const errorMsg = ref("")
@@ -42,55 +43,43 @@ const form = ref({
     username: '',
 })
 
-const validateUsername = async () => {
-    if (!form.value.username) return
-
-    const { data, error } = await client
-        .from('customer_profiles')
-        .select('username')
-        .eq('username', form.value.username)
-
-    if (error) {
-        errorMsg.value = 'Ошибка проверки username'
-        return false
-    }
-
-    if (data.length > 0) {
-        errorMsg.value = 'Этот username уже занят'
-        return false
-    }
-
-    errorMsg.value = ''
-    return true
-}
-
 // Создание профиля
-const createCustomerProfile = async () => {
+const createProfile = async () => {
     try {
-        isLoading.value = true
+        const supabase = useSupabaseClient()
+        const user = useSupabaseUser()
 
-        // 1. Создаем профиль заказчика
-        const { error: profileError } = await client
+        // Проверяем роль в JWT
+        const currentRole = user.value?.user_metadata?.current_role
+        if (currentRole !== 'customer') {
+            throw new Error('в jwt user_metadata роль не кастомер')
+        }
+
+        //Создаем профиль
+        const { data: profile, error } = await supabase
             .from('customer_profiles')
-            .upsert({
+            .insert({
                 user_id: user.value.id,
                 ...form.value
             })
+            .select()
+            .single()
 
-        if (profileError) throw profileError
+        if (error) throw error
 
-        // 2. ВАЖНО: Принудительно обновляем хранилище
-        const profileStore = useProfileStore()
-        profileStore.activeRole = 'customer' // Вручную устанавливаем роль
-        profileStore.activeProfile = { ...form.value, user_id: user.value.id }
+        //Обновляем JWT с ID профиля
+        await supabase.auth.updateUser({
+            data: { current_profile_id: profile.id }
+        })
 
-        // 3. Перенаправляем
-        await navigateTo(`/users/customer/${form.value.username}`)
+        await navigateTo(`/users/customer/${profile.username}`)
 
-    } catch (error) {
-        console.error('Ошибка:', error)
-    } finally {
-        isLoading.value = false
+    } catch (err) {
+        console.error('Ошибка создания профиля:', err.message)
+        // Перенаправляем на выбор роли при ошибке
+        if (err.message.includes('выберите роль')) {
+            await navigateTo('/profile-choose')
+        }
     }
 }
 </script>

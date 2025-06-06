@@ -14,16 +14,16 @@
 </template>
 
 <script setup>
-const profileStore = useProfileStore()
 
-// Только логирование (без инициализации)
-watchEffect(() => {
-    if (process.client) { // Только на клиенте
-        console.log('[Layout] Current state:', {
-            isAuth: profileStore.isAuthenticated,
-            role: profileStore.activeRole,
-            profile: profileStore.activeProfile
-        })
+const supabase = useSupabaseClient()
+const user = ref(null)
+
+onMounted(async () => {
+    const profileStore = useProfileStore()
+
+    // Если пользователь авторизован, но профиль не загружен
+    if (useSupabaseUser().value && !profileStore.current_profile) {
+        await profileStore.loadProfile()
     }
 })
 </script>

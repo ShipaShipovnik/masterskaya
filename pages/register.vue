@@ -35,45 +35,55 @@
 </template>
 
 <script setup>
-definePageMeta({
-    // layout: 'profile',
-    middleware: 'guest',
-})
+// definePageMeta({
+//     // layout: 'profile',
+//     middleware: 'guest',
+// })
 const client = useSupabaseClient();
+const profileStore = useProfileStore()
 
 // данные формы
 const email = ref("");
 const password1 = ref("")
 const password2 = ref("")
 
-
 // сообщения
 const errorMsg = ref("")
 const successMsg = ref("")
 
 async function signUp() {
-    if (password2.value === password1.value) {
-        try {
-            errorMsg.value = "";
-
-            const { data, error } = await client.auth.signUp({
-                email: email.value,
-                password: password1.value
-            });
-
-            if (error) throw error;
-
-            console.log('Успешная регистрация!', data);
-            successMsg.value = "Успешная регистрация!";
-            await navigateTo('/profile-choose', { replace: true })
-        } catch (error) {
-            errorMsg.value = error.message
-            console.error("ОШИБКА " + error.message)
-        }
-    } else {
-        errorMsg.value = "Пароли не совпадают!"
-
+    if (password2.value !== password1.value) {
+        errorMsg.value = "Пароли не совпадают!";
+        return;
     }
+
+    try {
+        errorMsg.value = "";
+
+        const { data, error } = await client.auth.signUp({
+            email: email.value,
+            password: password1.value
+        });
+        if (error) throw error;
+
+        if (data.user) {
+            // сохранение в сессию 
+            sessionStorage.setItem('temp_user', data.user);
+
+            successMsg.value = "Успешная регистрация!";
+            console.log(successMsg.value + data.user);
+
+            console.log('User status:', await client.auth.getUser())
+            console.log('Session:', await client.auth.getSession())
+
+            await navigateTo('/profile-choose', { replace: true })
+        }
+
+    } catch (error) {
+        errorMsg.value = error.message
+        console.error("ОШИБКА РЕГИСТРАЦИИ" + error)
+    }
+
 }
 </script>
 

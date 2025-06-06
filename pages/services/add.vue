@@ -81,10 +81,10 @@
     </div>
 </template>
 <script setup>
-definePageMeta({
-    layout: 'default',
-    middleware: 'auth',
-})
+// definePageMeta({
+//     layout: 'default',
+//     middleware: 'auth',
+// })
 const client = useSupabaseClient()
 const categories = ref([])
 const errorMsg = ref("")

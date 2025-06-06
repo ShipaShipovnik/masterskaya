@@ -41,12 +41,11 @@
         <!-- Dropdown Menu -->
         <div class="dropdown-menu" :class="{ 'dropdown-open': isMenuOpen }" v-if="isMenuOpen" @click.stop>
             <div class="dropdown-content">
-                <NuxtLink :to="`/users/${activeRole}/${profileStore.username}`"
-                    class="header-auth__profile dropdown-item">
+                <NuxtLink :to="`/users/${activeRole}/${username}`" class="header-auth__profile dropdown-item">
                     <img src="~/assets/images/default-avatar.png" alt="avatar" class="header__avatar">
                     <span>
-                        <p class="text-muted">{{ profileStore.username }}</p>
-                        <p> {{ profileStore.publicName }}</p>
+                        <p class="text-muted">{{ username }}</p>
+                        <p> {{ publicName }}</p>
                     </span>
                 </NuxtLink>
                 <hr class="dropdown-divider">
@@ -83,69 +82,64 @@
 <script setup lang="ts">
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
-const isAuth = computed(() => !!user.value)
-const successMsg = ref('');
-
 const profileStore = useProfileStore()
 
-const activeRole = profileStore.activeRole
+// Состояния
+const isMenuOpen = ref(false)
+const successMsg = ref('')
 
+// Реактивные данные
+const isAuth = computed(() => !!user.value)
+const activeRole = computed(() => profileStore.current_role)
+const username = computed(() => profileStore.current_profile?.username || 'Гость')
+const publicName = computed(() => profileStore.current_profile?.public_name || username.value)
+const avatarUrl = computed(() => profileStore.current_profile?.avatar_url || '/default-avatar.png')
+
+// Загрузка данных при монтировании
 onMounted(async () => {
-    await profileStore.init()
+    if (user.value) {
+        await profileStore.loadProfile()
+    }
 })
 
-
+// Переключение ролей
 const switchRole = async (targetRole: 'master' | 'customer') => {
-  // 1. Сохраняем выбранную роль в localStorage
-  localStorage.setItem('preferredRole', targetRole);
-  
-  // 2. Перезагружаем страницу
-  window.location.href = `/users/${targetRole}/${profileStore.username}`;
-
+    try {
+        await supabase.auth.updateUser({
+            data: { current_role: targetRole }
+        })
+        await profileStore.loadProfile() // Перезагружаем профиль
+        closeMenu()
+    } catch (error) {
+        console.error('Ошибка смены роли:', error)
+    }
 }
 
-// меню
-let isMenuOpen = ref(false)
+// Управление меню
+const closeMenu = () => isMenuOpen.value = false
 
-const closeMenu = () => {
-    isMenuOpen.value = false
-}
-
-// Закрытие при клике вне меню
 const handleClickOutside = (event) => {
     if (!event.target.closest('.header__auth') && isMenuOpen.value) {
         closeMenu()
     }
 }
 
-onMounted(() => {
-    document.addEventListener('click', handleClickOutside)
-})
-
-
-onBeforeUnmount(() => {
-    document.removeEventListener('click', handleClickOutside)
-})
-
-// логаут
+// Логаут
 async function logout() {
     try {
-        let { error } = await supabase.auth.signOut()
-
-        if (error) throw error;
-
-        successMsg.value = "Вы вышли";
-        console.log(successMsg);
-
-        await navigateTo('/', { replace: true })
+        const { error } = await supabase.auth.signOut()
+        if (error) throw error
+        successMsg.value = "Вы вышли"
         closeMenu()
+        await navigateTo('/', { replace: true })
     } catch (error) {
-        console.log(error)
+        console.error('Ошибка выхода:', error)
     }
 }
 
-
-
+// Обработчики событий
+onMounted(() => document.addEventListener('click', handleClickOutside))
+onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 </script>
 
 <style lang="scss" scoped>

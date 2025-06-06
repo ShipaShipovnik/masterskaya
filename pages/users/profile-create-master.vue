@@ -52,13 +52,14 @@
     </form>
 </template>
 <!-- TODO: реактивная проверка на никнейм в реальном времени времени -->
-<script setup>
+<script setup lang="ts">
 definePageMeta({
-    layout: 'default',
-    middleware: 'auth',
-})
-const client = useSupabaseClient()
+    middleware: ['auth']
+});
+
+const supabase = useSupabaseClient()
 const user = useSupabaseUser()
+const profileStore = useProfileStore()
 const router = useRouter()
 
 const errorMsg = ref("")
@@ -77,63 +78,44 @@ const form = ref({
     }
 })
 
-
-const validateUsername = async () => {
-    if (!form.value.username) return
-
-    const { data, error } = await client
-        .from('master_profiles')
-        .select('username')
-        .eq('username', form.value.username)
-
-    if (error) {
-        errorMsg.value = 'Ошибка проверки username'
-        return false
-    }
-
-    if (data.length > 0) {
-        errorMsg.value = 'Этот username уже занят'
-        return false
-    }
-
-    errorMsg.value = ''
-    return true
-}
-
 // Создание профиля
 const createProfile = async () => {
-    try {
-        isLoading.value = true
-        errorMsg.value = ''
-
-        // Проверяем username
-        const isUsernameValid = await validateUsername()
-        if (!isUsernameValid) return
-
-        // Создаем/обновляем профиль
-        const { error: profileError } = await client
-            .from('master_profiles')
-            .upsert({
-                user_id: user.value.id,
-                ...form.value
-            })
-
-        if (profileError) throw profileError
-
-        // 2. ВАЖНО: Принудительно обновляем хранилище
-        const profileStore = useProfileStore()
-        profileStore.activeRole = 'master' // Вручную устанавливаем роль
-        profileStore.activeProfile = { ...form.value, user_id: user.value.id }
-
-        // 3. Перенаправляем
-        await navigateTo(`/users/master/${form.value.username}`)
-
-    } catch (error) {
-        errorMsg.value = error.message || 'Произошла ошибка при создании профиля мастера'
-        console.error('Ошибка:', error)
-    } finally {
-        isLoading.value = false
+  try {
+    const supabase = useSupabaseClient()
+    const user = useSupabaseUser()
+    
+    // Проверяем роль в JWT
+    const currentRole = user.value?.user_metadata?.current_role
+    if (currentRole !== 'master') {
+      throw new Error('в jwt user_metadata роль не мастер')
     }
+
+    //Создаем профиль
+    const { data: profile, error } = await supabase
+      .from('master_profiles')
+      .insert({
+        user_id: user.value.id,
+        ...form.value
+      })
+      .select()
+      .single()
+
+    if (error) throw error
+
+    //Обновляем JWT с ID профиля
+    await supabase.auth.updateUser({
+      data: { current_profile_id: profile.id }
+    })
+
+    await navigateTo(`/users/master/${profile.username}`)
+
+  } catch (err) {
+    console.error('Ошибка создания профиля:', err.message)
+    // Перенаправляем на выбор роли при ошибке
+    if (err.message.includes('выберите роль')) {
+      await navigateTo('/profile-choose')
+    }
+  }
 }
 </script>
 

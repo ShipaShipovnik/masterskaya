@@ -33,10 +33,6 @@
 </template>
 
 <script setup>
-definePageMeta({
-    // layout: 'default',
-    middleware: 'guest',
-})
 
 const client = useSupabaseClient();
 
