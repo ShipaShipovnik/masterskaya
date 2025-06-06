@@ -86,10 +86,21 @@ const filters = reactive({
     maxDeadline: null
 })
 
+
+async function getCategories() {
+    const { data, error } = await supabase.from('categories').select()
+    if (error) {
+        console.error('Ошибка фетча категорий:', error)
+        errorMsg.value = 'Ошибка загрузки категорий'
+        return
+    }
+    //   console.log(data)
+    categories.value = data || []
+}
+
 // Получаем категории при загрузке
 onMounted(async () => {
-    const { data } = await supabase.from('categories').select('id, title')
-    categories.value = data
+    getCategories()
     fetchServices() // Первоначальная загрузка услуг
 })
 

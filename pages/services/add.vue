@@ -81,28 +81,31 @@
     </div>
 </template>
 <script setup>
-// definePageMeta({
-//     layout: 'default',
-//     middleware: 'auth',
-// })
-const client = useSupabaseClient()
+definePageMeta({
+    layout: 'default',
+    middleware: 'auth',
+})
+const supabase = useSupabaseClient()
 const categories = ref([])
 const errorMsg = ref("")
 
 
 const profileStore = useProfileStore()
+const activeRole = computed(() => profileStore.current_role)
+const username = computed(() => profileStore.current_profile?.username)
+const master_id = computed(() => profileStore.current_profile?.id || 'Гость')
+
 
 
 async function getCategories() {
-  const { data, error } = await client.from('categories').select()
+  const { data, error } = await supabase.from('categories').select()
   if (error) {
-    console.error('Error fetching categories:', error)
+    console.error('Ошибка фетча категорий:', error)
     errorMsg.value = 'Ошибка загрузки категорий'
     return
   }
   categories.value = data || []
 }
-
 
 const form = ref({
     title: '',
@@ -117,22 +120,19 @@ const form = ref({
 
 async function createService() {
   try {
-    if (!profileStore.activeProfile?.id) {
-      throw new Error('Профиль мастера не загружен')
-    }
-
-    const {error } = await client
+    
+    const {error } = await supabase
       .from('services')
       .insert({
         ...form.value,
-        master_id: profileStore.activeProfile.id
+        master_id: master_id.value
       })
 
     if (error) throw error
 
     console.log("[CREATE SERVICE] Удача: ")
     
-    await navigateTo(`/users/profile/${profileStore.activeProfile.username}`)
+    await navigateTo(`/users/master/${username.value}`)
   } catch (err) {
     console.error("[CREATE SERVICE] Ошибка:", err)
     errorMsg.value = err.message || 'Ошибка создания услуги'
