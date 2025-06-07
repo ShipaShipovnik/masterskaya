@@ -1,6 +1,6 @@
 <template>
     <div class="search-page">
-        <div class="search-page__container">
+        <div class="page-grid-layout">
             <!-- Боковая панель фильтров -->
             <aside class="search-filters">
                 <div class="search-filters__header">
@@ -60,8 +60,7 @@
                 <div>
                     <div v-if="loading">Loading...</div>
                     <div v-else class="search-results__cards">
-                        <ServiceCard v-for="service in services" :key="service.id" :serviceTitle="service.title"
-                            :serviceMinPrice="service.min_price" :serviceDeadline="service.deadline" />
+                        <ServiceCard v-for="service in services" :key="service.id" />
                     </div>
                 </div>
             </main>

@@ -1,5 +1,5 @@
 <template>
-    <div class="layout-container">
+    <div class="page-grid-layout">
         <div class="left column">
             <h1>Профиль Мастера</h1>
 
@@ -82,10 +82,8 @@ const chooseRole = async (role: 'master' | 'customer') => {
 </script>
 
 <style lang="scss" scoped>
-.layout-container {
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    padding-top: 80px;
+.page-grid-layout {
+    margin-top: 100px;
 }
 
 .column {
@@ -93,23 +91,44 @@ const chooseRole = async (role: 'master' | 'customer') => {
     flex-direction: column;
     text-align: center;
     gap: 15px;
+    padding: 30px 30px;
+
+    border-radius: 5px;
+    background: white;
 
     ul {
         text-align: left;
         // margin-bottom: 15px;
+        flex-grow: 1;
+        padding-left: 15px;
+        margin-bottom: 20px;
     }
 
     li {
         list-style-type: disc;
     }
+
+    // outline: grey 1px solid;
+
+    transition: all 0.3s ease,
+    box-shadow 0.3s ease;
+
+    &:hover {
+        transform: scale(1.01);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+
+    }
 }
 
+
+
 .left {
-    grid-column: 1 / 6;
-    border-right: 1px grey solid;
+    text-align: center;
+    grid-column: 2 / 7;
+    // border-right: 1px grey solid;
 }
 
 .right {
-    grid-column: 7 / 13;
+grid-column: 7 / 12;
 }
 </style>

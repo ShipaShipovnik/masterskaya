@@ -1,6 +1,6 @@
 <template>
     <div class="avatar-upload" @click="triggerFileInput">
-        <img :src="tempPreviewUrl || initialAvatar || '/default-avatar.png'" alt="Аватар профиля"
+        <img :src="tempPreviewUrl || initialAvatar || defaultAvatar" alt="Аватар профиля"
             class="avatar-image" />
         <div class="upload-overlay">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
@@ -12,6 +12,7 @@
 </template>
 
 <script setup>
+import defaultAvatar from '~/assets/images/default-avatar.png'
 const props = defineProps({
     initialAvatar: String // Только для существующих аватаров
 })

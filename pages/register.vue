@@ -9,13 +9,28 @@
                     placeholder="youremail@example.com">
             </div>
             <div class="auth-form__input-group">
-                <label for="password-input">Пароль:</label>
-                <input type="password" id="password-input" v-model="password1" required
-                    class="auth-form__input default-input">
+                <label for="password">Пароль:</label>
+                <div class="password-input-group">
+                    <input :type="passIsVisible ? 'text' : 'password'"
+                        class="auth-form__input default-input password-input" v-model="password1" required>
+                    <button type="button" @click="passIsVisible = !passIsVisible"
+                        class="pass-visibility-btn cursor-pointer" aria-label="password toggle">
+                        <Icon name="bx:show" style="color: black" class="" v-if="!passIsVisible" />
+                        <Icon name="bx:hide" style="color: black" class="" v-else />
+                    </button>
+                </div>
             </div>
             <div class="auth-form__input-group">
-                <label for="">Повторите пароль:</label>
-                <input type="password" class="auth-form__input default-input" v-model="password2" required>
+                <label for="password">Пароль:</label>
+                <div class="password-input-group">
+                    <input :type="passIsVisible ? 'text' : 'password'"
+                        class="auth-form__input default-input password-input" v-model="password2" required>
+                    <button type="button" @click="passIsVisible = !passIsVisible"
+                        class="pass-visibility-btn cursor-pointer" aria-label="password toggle">
+                        <Icon name="bx:show" style="color: black" class="" v-if="!passIsVisible" />
+                        <Icon name="bx:hide" style="color: black" class="" v-else />
+                    </button>
+                </div>
             </div>
             <button class="auth-form__btn btn">
                 Зарегестрироваться
@@ -46,6 +61,8 @@ const profileStore = useProfileStore()
 const email = ref("");
 const password1 = ref("")
 const password2 = ref("")
+const passIsVisible = ref(false)
+
 
 // сообщения
 const errorMsg = ref("")

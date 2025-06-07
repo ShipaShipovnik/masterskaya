@@ -17,8 +17,8 @@ body {
   background-color: #f0f0f0;
 }
 
-p{
-  word-wrap: break-word; /* Перенос слов */ 
+p {
+  word-wrap: break-word; /* Перенос слов */
 }
 
 // текст и ссылки
@@ -39,12 +39,24 @@ a:hover {
   height: 100%;
 }
 
+.page-grid-layout {
+  // outline: 1px red solid;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  padding: 40px 0px;
+}
+
 // инпуты
 .default-input {
   border: 2px solid rgb(0, 0, 0, 30%);
   padding: 5px 14px;
   border-radius: 5px;
-  word-wrap: break-word; 
+  word-wrap: break-word;
 }
 
 // инпуты
@@ -53,7 +65,7 @@ a:hover {
   padding: 10px 14px;
   border-radius: 5px;
   resize: vertical;
-  word-wrap: break-word; 
+  word-wrap: break-word;
 }
 
 // кнопки
@@ -73,6 +85,19 @@ a:hover {
   // color: $red;
   background-color: $black;
   border: $red 1px solid;
+}
+
+.password-input-group {
+  position: relative;
+}
+
+.pass-visibility-btn {
+  cursor: pointer;
+  position: absolute;
+  right: 10px;
+  top: 0px;
+
+  font-size: 1.8rem;
 }
 
 // анимации

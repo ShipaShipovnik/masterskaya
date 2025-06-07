@@ -3,7 +3,7 @@
         <div class="profile-container">
             <div class="profile-sidebar">
                 <div class="profile-sidebar__avatar">
-                    <img :src="profile?.avatar_url || defaultAvatar" alt="Аватар">
+                    <img :src="profile?.avatar_url || defaultAvatar" alt="Аватар" class="avatar-img">
                 </div>
                 <p class="profile-sidebar__name">{{ profile?.public_name || username }}</p>
                 <p class="profile-sidebar__job text-muted">{{ profile?.job || 'Должность не указана' }}</p>
@@ -18,20 +18,26 @@
                 </div>
                 <p class="text-muted">Написать с помощью: </p>
                 <div class="profile-sidebar__socials">
-                    <button class="profile-sidebar__social-btn">тг</button>
-                    <button class="profile-sidebar__social-btn">ок</button>
-                    <button class="profile-sidebar__social-btn">вк</button>
+                    <NuxtLink to="/" class="profile-sidebar__social-btn">
+                        <SvgoOkIcon class="footer__icon" />
+                    </NuxtLink>
+                    <NuxtLink to="/" class="profile-sidebar__social-btn">
+                        <SvgoVkIcon class="footer__icon" />
+                    </NuxtLink>
+                    <NuxtLink to="/" class="profile-sidebar__social-btn">
+                        <SvgoTgIcon class="footer__icon" />
+                    </NuxtLink>
                 </div>
 
                 <!-- Кнопки редактирования для владельца -->
                 <div v-if="isOwner" class="owner-actions">
-                    <button @click="navigateTo(`/users/profile/${username}`)" class="edit-btn">
+                    <button @click="navigateTo(`/users/profile/${username}`)" class="profile-edit-btn btn">
                         Редактировать профиль
                     </button>
                 </div>
 
             </div>
-            <div class="profile-content" v-if="role === master">
+            <div class="profile-content">
 
                 <div class="profile-content__tab active-tab" id="gallery" v-if="activeTab === 'gallery'">
                     <div class="profile-content__gallery-img"></div>
@@ -42,7 +48,7 @@
 
                 <div class="profile-content__tab" id="services" v-else-if="activeTab === 'services'">
                     <div v-if="isOwner" class="owner-actions">
-                        <button @click="navigateTo('/services/add')" class="btn-red edit-btn ">
+                        <button @click="navigateTo('/services/add')" class="btn-red add-service-btn ">
                             Добавить услугу
                         </button>
                     </div>
@@ -70,9 +76,12 @@
         </div>
     </template>
     <template v-else>
-        <div class="not-found">
-            Профиль с именем "{{ username }}" не найден
+        <div class="profile-content">
+            <div class="not-found">
+                Профиль с именем "{{ username }}" не найден
+            </div>
         </div>
+
     </template>
 
 </template>
@@ -185,6 +194,12 @@ const handleTabChange = (tab) => {
     min-height: 1000px;
 }
 
+.not-found {
+    font-size: 30px;
+    width: 100%;
+    text-align: center;
+}
+
 .profile-sidebar {
     background-color: $white;
     padding: 20px;
@@ -198,6 +213,13 @@ const handleTabChange = (tab) => {
         aspect-ratio: 1 / 1;
         background-color: grey;
         margin-bottom: 15px;
+
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
     }
 
     .profile-sidebar__tabs {
@@ -206,7 +228,7 @@ const handleTabChange = (tab) => {
         .profile-sidebar__tab-btn {
             width: 100%;
             color: $white;
-            background-color: grey;
+            background-color: $red;
             text-transform: uppercase;
             padding: 10px 0;
             margin-bottom: 12px;
@@ -233,6 +255,29 @@ const handleTabChange = (tab) => {
         font-size: 16px;
         font-weight: 700px;
     }
+
+    .profile-sidebar__socials {
+        display: flex;
+        justify-content: space-between;
+        margin: 15px 0;
+
+        .profile-sidebar__social-btn {
+            background-color: rgb(177, 177, 177);
+            font-size: 50px;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            aspect-ratio: 1 / 1;
+            transition: all 0.3s ease, box-shadow 0.3s ease;
+
+            &:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+                background-color: $red;
+
+            }
+        }
+    }
 }
 
 .profile-content {
@@ -258,14 +303,22 @@ const handleTabChange = (tab) => {
 .owner-actions {
     margin: 15px 0;
 
-    .edit-btn {
+    .add-service-btn {
         width: 100%;
         padding: 10px;
         border-radius: 5px;
         cursor: pointer;
         transition: background-color 0.3s;
-
     }
+}
+
+.profile-edit-btn {
+    width: 100%;
+    background-color: $yellow;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
 }
 
 .profile-content__gallery-img {

@@ -9,7 +9,15 @@
             </div>
             <div class="auth-form__input-group">
                 <label for="password">Пароль:</label>
-                <input type="password" class="auth-form__input default-input" v-model="password">
+                <div class="password-input-group">
+                    <input :type="passIsVisible ? 'text' : 'password'"
+                        class="auth-form__input default-input password-input" v-model="password" required>
+                    <button type="button" @click="passIsVisible = !passIsVisible"
+                        class="pass-visibility-btn cursor-pointer" aria-label="password toggle">
+                        <Icon name="bx:show" style="color: black" class="" v-if="!passIsVisible" />
+                        <Icon name="bx:hide" style="color: black" class="" v-else />
+                    </button>
+                </div>
             </div>
 
             <button class="auth-form__btn btn">
@@ -39,6 +47,8 @@ const client = useSupabaseClient();
 // данные формы
 const email = ref("");
 const password = ref("")
+
+const passIsVisible = ref(false)
 
 // сообщения
 const errorMsg = ref("")
@@ -75,4 +85,7 @@ async function signIn() {
 .auth-messages {
     color: black;
 }
+
+
+
 </style>

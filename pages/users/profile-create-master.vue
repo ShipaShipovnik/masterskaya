@@ -1,60 +1,64 @@
 <template>
-  <form @submit.prevent="createProfile" class="profile-create__form">
-    <div class="profile-create__input-group">
-      <label>Аватар:</label>
-      <avatarUploader @file-selected="handleFileSelected" />
-      <p class="profile-create__input-subtext">Не больше 5 мб.</p>
+  <div class="page-grid-layout">
 
-      <div v-if="uploadError" class="error-message">
-        {{ uploadError }}
+
+    <form @submit.prevent="createProfile" class="profile-create__form">
+      <div class="profile-create__input-group">
+        <label>Аватар:</label>
+        <avatarUploader @file-selected="handleFileSelected" />
+        <p class="profile-create__input-subtext">Не больше 5 мб.</p>
+
+        <div v-if="uploadError" class="error-message">
+          {{ uploadError }}
+        </div>
+
+      </div>
+      <!-- публичное имя -->
+      <div class="profile-create__input-group">
+        <label>Публичное имя:</label>
+        <p class="profile-create__input-subtext">Данное имя будет отображаться в вашем профиле.</p>
+        <input type="text" class="default-input" v-model="form.public_name">
+      </div>
+      <div class="profile-create__input-group">
+        <label>Юзернейм:</label>
+        <p class="profile-create__input-subtext">Данное имя будет служить в качестве ссылки на ваш профиль.
+        </p>
+        <input type="text" class="default-input" v-model="form.username" required>
+      </div>
+      <div class="profile-create__input-group">
+        <label>Спелизация:</label>
+        <p class="profile-create__input-subtext">Опишите в чем вы специализируетесь.
+        </p>
+        <input type="text" class="default-input" v-model="form.job" required>
+      </div>
+      <div class="profile-create__input-group">
+        <label>Описание профиля:</label>
+        <p class="profile-create__input-subtext">Кратко опишите себя и чем вы занимаетесь.</p>
+        <textarea v-model="form.description" class="default-textarea"></textarea>
       </div>
 
-    </div>
-    <!-- публичное имя -->
-    <div class="profile-create__input-group">
-      <label>Публичное имя:</label>
-      <p class="profile-create__input-subtext">Данное имя будет отображаться в вашем профиле.</p>
-      <input type="text" class="default-input" v-model="form.public_name">
-    </div>
-    <div class="profile-create__input-group">
-      <label>Юзернейм:</label>
-      <p class="profile-create__input-subtext">Данное имя будет служить в качестве ссылки на ваш профиль.
-      </p>
-      <input type="text" class="default-input" v-model="form.username" required>
-    </div>
-    <div class="profile-create__input-group">
-      <label>Спелизация:</label>
-      <p class="profile-create__input-subtext">Опишите в чем вы специализируетесь.
-      </p>
-      <input type="text" class="default-input" v-model="form.job" required>
-    </div>
-    <div class="profile-create__input-group">
-      <label>Описание профиля:</label>
-      <p class="profile-create__input-subtext">Кратко опишите себя и чем вы занимаетесь.</p>
-      <textarea v-model="form.description" class="default-textarea"></textarea>
-    </div>
-
-    <!-- контакты -->
-    <div class="input-group">
-      <label>Контакты профиля:</label>
-      <p class="profile-create__input-subtext">Будут отображаться в вкладке "Обо мне" в вашем профиле.</p>
-
+      <!-- контакты -->
       <div class="input-group">
-        <label>Telegram:</label>
-        <input type="text" class="default-input" v-model="form.contacts.telegram">
-      </div>
-      <div class="input-group">
-        <label>ВКонтакте:</label>
-        <input type="text" class="default-input" v-model="form.contacts.vkontakte">
-      </div>
-      <div class="input-group">
-        <label>Одноклассники:</label>
-        <input type="text" class="default-input" v-model="form.contacts.odnoklassniki">
-      </div>
-    </div>
+        <label>Контакты профиля:</label>
+        <p class="profile-create__input-subtext">Будут отображаться в вкладке "Обо мне" в вашем профиле.</p>
 
-    <button class="btn btn-red">{{ isLoading ? 'Загрузка...' : 'Создать профиль Мастера' }}</button>
-  </form>
+        <div class="input-group">
+          <label>Telegram:</label>
+          <input type="text" class="default-input" v-model="form.contacts.telegram">
+        </div>
+        <div class="input-group">
+          <label>ВКонтакте:</label>
+          <input type="text" class="default-input" v-model="form.contacts.vkontakte">
+        </div>
+        <div class="input-group">
+          <label>Одноклассники:</label>
+          <input type="text" class="default-input" v-model="form.contacts.odnoklassniki">
+        </div>
+      </div>
+
+      <button class="btn btn-red">{{ isLoading ? 'Загрузка...' : 'Создать профиль Мастера' }}</button>
+    </form>
+  </div>
 </template>
 <!-- TODO: реактивная проверка на никнейм в реальном времени времени -->
 <script setup lang="ts">
@@ -179,11 +183,15 @@ const createProfile = async () => {
 
 
 <style lang="scss" scoped>
-.profile-create__form {
+
+.profile-create__form { 
   display: flex;
   flex-direction: column;
   gap: 15px;
   width: 100%;
+
+  grid-column: 1 / 13;
+
   background-color: white;
   padding: 15px;
 }

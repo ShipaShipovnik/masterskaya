@@ -41,7 +41,7 @@ export const useProfileStore = defineStore('profileStore', {
     getters: {
         // Геттер теперь учитывает временную роль
         current_role: (state) => state.current_profile?.role || state.temp_role,
-
+        hasProfile: (state) => state.current_profile !== null,
         username: (state) => state.current_profile?.username || 'Гость',
         avatarUrl: (state) => state.current_profile?.avatar_url || '/default-avatar.jpg',
 
