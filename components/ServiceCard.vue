@@ -1,34 +1,48 @@
 <template>
-    <div class="card">
-        <NuxtLink to="" class="card__link">
-            <div class="card__image-container">
-                <img src="~/assets/images/test_service.jpg" alt="service photo" class="card__image">
-                <div class="card__category-label">
-                    {{ service.categories.title }}
+    <div class="card" @click="openModal">
+        <div class="card__image-container">
+            <img src="~/assets/images/test_service.jpg" alt="service photo" class="card__image">
+            <div class="card__category-label">
+                {{ service.categories.title }}
+            </div>
+        </div>
+
+        <div class="card__content">
+            <h3 class="card__title">{{ service.title }}</h3>
+
+            <div class="card__meta">
+                <div class="card__deadline">
+                    <Icon name="meteor-icons:clock" class="card__deadline-icon" size="1em" />
+                    <span class="card__deadline-text">
+                        до {{ service.deadline }} дней
+                    </span>
+                </div>
+
+                <div class="card__price">
+                    от {{ service.min_price }} ₽
                 </div>
             </div>
-
-            <div class="card__content">
-                <h3 class="card__title">{{ service.title }}</h3>
-
-                <div class="card__meta">
-                    <div class="card__deadline">
-                        <Icon name="meteor-icons:clock" class="card__deadline-icon" size="1em" />
-                        <span class="card__deadline-text">
-                            до {{ service.deadline }} дней
-                        </span>
-                    </div>
-
-                    <div class="card__price">
-                        от {{ service.min_price }} ₽
-                    </div>
-                </div>
-            </div>
-        </NuxtLink>
+        </div>
     </div>
+    <Teleport to="body">
+        <ServiceModal v-if="isModalOpen" :serviceId="service.id" @close="closeModal"  :show="isModalOpen"/>
+    </Teleport>
+
 </template>
 
 <script setup>
+const isModalOpen = ref(false)
+
+const openModal = () => {
+    isModalOpen.value = true
+    document.body.style.overflow = 'hidden'
+}
+
+const closeModal = () => {
+    isModalOpen.value = false
+    document.body.style.overflow = ''
+}
+
 const props = defineProps({
     service: {
         type: Object,

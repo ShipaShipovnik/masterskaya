@@ -95,7 +95,8 @@ import defaultAvatar from '@/assets/images/default-avatar.png'
 
 const client = useSupabaseClient()
 const user = useSupabaseUser() //авторизированый юзер
-const { username } = useRoute().params //юзернейм на профиль кторого хочу перейти щас
+const { username } = useRoute().params //юзернейм на профиль которого хочу перейти щас
+
 
 const services = ref([])
 const loading = ref({
