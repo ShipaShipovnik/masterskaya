@@ -135,9 +135,9 @@ export const useProfileStore = defineStore('profileStore', {
                     role: current_role
                 }
 
-                console.log('User:', user)
-                console.log('App metadata:', user.app_metadata)
-                console.log('Profile data:', profile)
+                // console.log('User:', user)
+                // console.log('App metadata:', user.app_metadata)
+                // console.log('Profile data:', profile)
 
             } catch (err) {
                 console.error('[loadProfile] Ошибка загрузки профиля:', err)
