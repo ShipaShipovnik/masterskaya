@@ -1,5 +1,5 @@
 <template>
-    <form @submit.prevent="createCustomerProfile" class="profile-create__form">
+    <form @submit.prevent="createProfile" class="profile-create__form">
         <div class="profile-create__input-group">
             <label>Аватар:</label>
             <avatarUploader @file-selected="handleFileSelected" />
@@ -8,7 +8,6 @@
             <div v-if="uploadError" class="error-message">
                 {{ uploadError }}
             </div>
-
         </div>
         <!-- публичное имя -->
         <div class="profile-create__input-group">
@@ -21,6 +20,11 @@
             <p class="profile-create__input-subtext">Данное имя будет служить в качестве ссылки на ваш профиль.
             </p>
             <input type="text" class="default-input" v-model="form.username" required>
+        </div>
+        <div class="profile-create__input-group">
+            <label>Описание профиля:</label>
+            <p class="profile-create__input-subtext">Кратко опишите себя и чем вы занимаетесь.</p>
+            <textarea v-model="form.description" class="default-textarea"></textarea>
         </div>
 
         <button :disabled="isLoading" class="btn btn-red">
@@ -48,6 +52,7 @@ const uploadError = ref(null)
 const form = ref({
     public_name: '',
     username: '',
+    description:'',
 })
 
 const avatarFile = ref < File | null > (null)

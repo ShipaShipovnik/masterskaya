@@ -6,18 +6,25 @@
                     <img :src="profile?.avatar_url || defaultAvatar" alt="Аватар">
                 </div>
                 <p class="profile-sidebar__name">{{ profile?.public_name || username }}</p>
-                <p class="profile-sidebar__job text-muted">{{ profile?.job || 'Должность не указана' }}</p>
+                <!-- <p class="profile-sidebar__job text-muted">{{ profile?.job || 'Должность не указана' }}</p> -->
 
-                <!-- <p class="text-muted">Написать с помощью: </p>
+                <p class="text-muted">Связаться через: </p>
                 <div class="profile-sidebar__socials">
-                    <button class="profile-sidebar__social-btn">тг</button>
-                    <button class="profile-sidebar__social-btn">ок</button>
-                    <button class="profile-sidebar__social-btn">вк</button>
-                </div> -->
+                    <NuxtLink to="/" class="profile-sidebar__social-btn">
+                        <SvgoOkIcon class="footer__icon" />
+                    </NuxtLink>
+                    <NuxtLink to="/" class="profile-sidebar__social-btn">
+                        <SvgoVkIcon class="footer__icon" />
+                    </NuxtLink>
+                    <NuxtLink to="/" class="profile-sidebar__social-btn">
+                        <SvgoTgIcon class="footer__icon" />
+                    </NuxtLink>
+                </div>
+
 
                 <!-- Кнопки редактирования для владельца -->
                 <div v-if="isOwner" class="owner-actions">
-                    <button @click="navigateTo(`/users/profile/${username}`)" class="edit-btn">
+                    <button @click="navigateTo(`/users/profile/${username}`)" class="profile-edit-btn btn">
                         Редактировать профиль
                     </button>
                 </div>
@@ -25,8 +32,8 @@
             </div>
             <div class="profile-content">
                 <section class="profile-content__about-me">
-                    <h2>Обо мне:</h2>
-                    <!-- <p>{{ profile?.description || 'Пользователь пока не добавил информацию о себе' }}</p> -->
+                    <h2 class="text-muted">Обо мне:</h2>
+                    <p>{{ profile?.description || 'Пользователь пока не добавил информацию о себе.' }}</p>
                 </section>
             </div>
         </div>
@@ -162,6 +169,38 @@ onMounted(() => {
         font-size: 16px;
         font-weight: 700px;
     }
+
+    .profile-sidebar__socials {
+        display: flex;
+        justify-content: space-between;
+        margin: 15px 0;
+
+        .profile-sidebar__social-btn {
+            background-color: rgb(177, 177, 177);
+            font-size: 50px;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            aspect-ratio: 1 / 1;
+            transition: all 0.3s ease, box-shadow 0.3s ease;
+
+            &:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+                background-color: $red;
+
+            }
+        }
+    }
+}
+
+.profile-edit-btn {
+    width: 100%;
+    background-color: $yellow;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
 }
 
 .profile-content {

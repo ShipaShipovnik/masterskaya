@@ -16,7 +16,7 @@
                     <button class="profile-sidebar__tab-btn btn" :class="{ 'active-tab-btn': activeTab === 'about' }"
                         @click="handleTabChange('about')">Обо мне</button>
                 </div>
-                <p class="text-muted">Написать с помощью: </p>
+                <p class="text-muted">Связаться через: </p>
                 <div class="profile-sidebar__socials">
                     <NuxtLink to="/" class="profile-sidebar__social-btn">
                         <SvgoOkIcon class="footer__icon" />
