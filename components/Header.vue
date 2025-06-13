@@ -47,36 +47,36 @@
         <!-- Dropdown Menu -->
         <div class="dropdown-menu" :class="{ 'dropdown-open': isMenuOpen }" v-if="isMenuOpen" @click.stop>
             <div class="dropdown-content">
-                <template v-if="hasProfile">
-                    <NuxtLink :to="`/users/${activeRole}/${username}`" class="header-auth__profile dropdown-item">
-                        <img :src="avatarUrl || defaultAvatar" alt=" Аватар">
-                        <span>
-                            <p class="text-muted">{{ username }}</p>
-                            <p> {{ publicName }}</p>
-                        </span>
-                    </NuxtLink>
-                    <hr class="dropdown-divider">
-                    <!--  -->
-                    <button @click="switchRole('master')" v-if="activeRole === 'customer'" class="dropdown-item">
-                        Стать Мастером
-                    </button>
-                    <button @click="switchRole('customer')" v-if="activeRole === 'master'" class="dropdown-item">
-                        Стать Заказчиком
-                    </button>
-                    <!--  -->
-                    <hr class="dropdown-divider">
-                    <hr class="dropdown-divider">
-                    <NuxtLink to="/users/profile-create-customer" class="dropdown-item" @click="closeMenu">
-                        Создать профиль Заказчика
-                    </NuxtLink>
-                    <hr class="dropdown-divider">
-                    <NuxtLink to="/users/profile-create-master" class="dropdown-item" @click="closeMenu">
-                        Создать профиль Мастера
-                    </NuxtLink>
-                </template>
-                <p class="header-auth__profile dropdown-item " v-else>
+
+                <NuxtLink :to="`/users/${activeRole}/${username}`" class="header-auth__profile dropdown-item">
+                    <img :src="avatarUrl || defaultAvatar" alt=" Аватар">
+                    <span>
+                        <p class="text-muted">{{ username }}</p>
+                        <p> {{ publicName }}</p>
+                    </span>
+                </NuxtLink>
+                <hr class="dropdown-divider">
+                <!--  -->
+                <button @click="switchRole('master')" v-if="activeRole === 'customer'" class="dropdown-item">
+                    Стать Мастером
+                </button>
+                <button @click="switchRole('customer')" v-if="activeRole === 'master'" class="dropdown-item">
+                    Стать Заказчиком
+                </button>
+                <!--  -->
+                <hr class="dropdown-divider">
+                <hr class="dropdown-divider">
+                <NuxtLink to="/users/profile-create-customer" class="dropdown-item" @click="closeMenu">
+                    Создать профиль Заказчика
+                </NuxtLink>
+                <hr class="dropdown-divider">
+                <NuxtLink to="/users/profile-create-master" class="dropdown-item" @click="closeMenu">
+                    Создать профиль Мастера
+                </NuxtLink>
+
+                <!-- <p class="header-auth__profile dropdown-item " v-if="!hasProfile">
                     Завершите создание профиля.
-                </p>
+                </p> -->
                 <hr class="dropdown-divider">
                 <NuxtLink to="/faq" class="dropdown-item" @click="closeMenu">
                     Поддержка

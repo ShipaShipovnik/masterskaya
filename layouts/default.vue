@@ -14,18 +14,6 @@
 </template>
 
 <script setup>
-
-const supabase = useSupabaseClient()
-const user = ref(null)
-
-onMounted(async () => {
-    const profileStore = useProfileStore()
-
-    // Если пользователь авторизован, но профиль не загружен
-    if (useSupabaseUser().value && !profileStore.current_profile) {
-        await profileStore.loadProfile()
-    }
-})
 </script>
 
 <style lang="scss" scoped>

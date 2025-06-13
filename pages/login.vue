@@ -20,8 +20,8 @@
                 </div>
             </div>
 
-            <button class="auth-form__btn btn">
-                Войти
+            <button class="auth-form__btn btn" :disabled="isLoading">
+                {{ isLoading ? 'Загрузка...' : 'Войти' }}
             </button>
 
             <!-- Сообщения об ошибках/успехе -->
@@ -31,9 +31,8 @@
             </div>
 
             <p class="auth-form__subtext text-muted">
-                Нет аккаунта?
                 <NuxtLink to="/register" no-prefetch class="auth-form__link ">
-                    Зарегистрироваться.
+                    Нет аккаунта? Зарегистрироваться.
                 </NuxtLink>
             </p>
         </form>
@@ -51,26 +50,47 @@ const password = ref("")
 const passIsVisible = ref(false)
 
 // сообщения
-const errorMsg = ref("")
-const successMsg = ref("")
-
+const isLoading = ref(false);
+const errorMsg = ref("");
+const successMsg = ref("");
 
 async function signIn() {
     try {
+        isLoading.value = true;
         errorMsg.value = "";
-        const { data, error } = await client.auth.signInWithPassword({
+        successMsg.value = "";
+
+        // 1. Выполняем вход
+        const { error } = await client.auth.signInWithPassword({
             email: email.value,
             password: password.value
         });
-
         if (error) throw error;
 
-        console.log('Успешный вход!', data);
+        // 2. Ждем инициализации профиля
+        const profileStore = useProfileStore();
+        let attempts = 0;
+        const maxAttempts = 10; // ~5 секунд максимум
+
+        while (!profileStore.current_profile && attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            attempts++;
+        }
+
+        // 3. Перенаправляем
+        if (profileStore.current_profile) {
+            await navigateTo('/');
+        } else {
+            console.warn('[signIn] Профиль не загрузился автоматически');
+            await navigateTo('/profile-check', { replace: true });
+        }
+
         successMsg.value = "Успешный вход!";
-        await navigateTo('/', { replace: true })
     } catch (error) {
-        errorMsg.value = error.message
-        console.error("ОШИБКА ТАКАЯ" + errorMsg)
+        errorMsg.value = error.message;
+        console.error("[signIn] Ошибка:", error);
+    } finally {
+        isLoading.value = false;
     }
 }
 </script>
@@ -85,7 +105,4 @@ async function signIn() {
 .auth-messages {
     color: black;
 }
-
-
-
 </style>
