@@ -40,55 +40,33 @@
 </template>
 
 <script setup>
-
 const client = useSupabaseClient();
+const isLoading = ref(false);
+const errorMsg = ref("");
 
 // данные формы
 const email = ref("");
 const password = ref("")
-
 const passIsVisible = ref(false)
 
 // сообщения
-const isLoading = ref(false);
-const errorMsg = ref("");
-const successMsg = ref("");
+const successMsg = ref("")
 
 async function signIn() {
+    errorMsg.value = ''
+
     try {
         isLoading.value = true;
-        errorMsg.value = "";
-        successMsg.value = "";
-
-        // 1. Выполняем вход
         const { error } = await client.auth.signInWithPassword({
             email: email.value,
             password: password.value
         });
         if (error) throw error;
 
-        // 2. Ждем инициализации профиля
-        const profileStore = useProfileStore();
-        let attempts = 0;
-        const maxAttempts = 10; // ~5 секунд максимум
-
-        while (!profileStore.current_profile && attempts < maxAttempts) {
-            await new Promise(resolve => setTimeout(resolve, 500));
-            attempts++;
-        }
-
-        // 3. Перенаправляем
-        if (profileStore.current_profile) {
-            await navigateTo('/');
-        } else {
-            console.warn('[signIn] Профиль не загрузился автоматически');
-            await navigateTo('/profile-check', { replace: true });
-        }
-
-        successMsg.value = "Успешный вход!";
+        // После успешного входа - middleware автоматически перенаправит
+        await navigateTo('/'); 
     } catch (error) {
         errorMsg.value = error.message;
-        console.error("[signIn] Ошибка:", error);
     } finally {
         isLoading.value = false;
     }

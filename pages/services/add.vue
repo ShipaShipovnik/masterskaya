@@ -73,6 +73,15 @@
                 <input type="number" class="default-input w-1/3 p-2 border rounded" v-model="form.amount" min="1">
             </div>
 
+            <div class="service-create__form__input-group space-y-2">
+                <label class="block font-medium">Доступные слоты:</label>
+                <p class="service-create__form__input-subtext text-gray-500 text-xs">
+                    Сколько свободных слотов осталось? Указывайте если готовы выполнять эту услугу несколько раз, или
+                    оставьте 1 если она единоразовая.
+                </p>
+                <ServicePhotosUploader :initialFiles="photos" @update:files="newFiles = $event" />
+            </div>
+
             <button type="submit"
                 class="btn btn-red bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded transition-colors">
                 Создать услугу
@@ -98,13 +107,13 @@ const master_id = computed(() => profileStore.current_profile?.id || 'Гость
 
 
 async function getCategories() {
-  const { data, error } = await supabase.from('categories').select()
-  if (error) {
-    console.error('Ошибка фетча категорий:', error)
-    errorMsg.value = 'Ошибка загрузки категорий'
-    return
-  }
-  categories.value = data || []
+    const { data, error } = await supabase.from('categories').select()
+    if (error) {
+        console.error('Ошибка фетча категорий:', error)
+        errorMsg.value = 'Ошибка загрузки категорий'
+        return
+    }
+    categories.value = data || []
 }
 
 const form = ref({
@@ -116,27 +125,28 @@ const form = ref({
     max_price: null,
     amount: 1,
     category_id: null,
+    photos: []
 })
 
 async function createService() {
-  try {
-    
-    const {error } = await supabase
-      .from('services')
-      .insert({
-        ...form.value,
-        master_id: master_id.value
-      })
+    try {
 
-    if (error) throw error
+        const { error } = await supabase
+            .from('services')
+            .insert({
+                ...form.value,
+                master_id: master_id.value
+            })
 
-    console.log("[CREATE SERVICE] Удача: ")
-    
-    await navigateTo(`/users/master/${username.value}`)
-  } catch (err) {
-    console.error("[CREATE SERVICE] Ошибка:", err)
-    errorMsg.value = err.message || 'Ошибка создания услуги'
-  }
+        if (error) throw error
+
+        console.log("[CREATE SERVICE] Удача: ")
+
+        await navigateTo(`/users/master/${username.value}`)
+    } catch (err) {
+        console.error("[CREATE SERVICE] Ошибка:", err)
+        errorMsg.value = err.message || 'Ошибка создания услуги'
+    }
 }
 
 
@@ -168,15 +178,14 @@ onMounted(() => {
 
 
 .default-input {
-  @apply border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500;
+    @apply border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500;
 }
 
 .default-textarea {
-  @apply border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500;
+    @apply border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500;
 }
 
 .btn-red {
-  @apply bg-red-500 hover:bg-red-600 text-white;
+    @apply bg-red-500 hover:bg-red-600 text-white;
 }
-
 </style>

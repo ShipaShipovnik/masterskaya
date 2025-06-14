@@ -147,7 +147,7 @@ const createProfile = async () => {
     console.error('Ошибка создания профиля:', err.message)
     // Перенаправляем на выбор роли при ошибке
     if (err.message.includes('выберите роль')) {
-      await navigateTo('/profile-choose')
+      await navigateTo('/choose-role')
     }
   }
 }

@@ -15,6 +15,9 @@
 </template>
 
 <script setup>
+const profileStore = useProfileStore()
+console.log('current_profile:', profileStore.current_profile)
+console.log('current_role:', profileStore.current_role)
 </script>
 
 <style lang="scss" scoped>

@@ -34,148 +34,195 @@ type Profile = MasterProfile | CustomerProfile
 export const useProfileStore = defineStore('profileStore', {
     state: () => ({
         current_profile: null as Profile | null,
-        temp_role: null as 'master' | 'customer' | null,
+        // temp_role: null as 'master' | 'customer' | null,
         isLoading: false,
         error: null as string | null
     }),
-    getters: {
 
-        current_role: (state) => state.current_profile?.role || state.temp_role,
+    getters: {
+        current_role: (state) => state.current_profile?.role,
         hasProfile: (state) => state.current_profile !== null,
         username: (state) => state.current_profile?.username || 'Гость',
         avatarUrl: (state) => state.current_profile?.avatar_url || '/default-avatar.jpg',
-
-        masterProfile: (state): MasterProfile | null => {
-            return state.current_profile?.role === 'master'
-                ? (state.current_profile as MasterProfile)
-                : null
-        },
-
-        customerProfile: (state): CustomerProfile | null => {
-            return state.current_profile?.role === 'customer'
-                ? (state.current_profile as CustomerProfile)
-                : null
-        }
-
+        masterProfile: (state): MasterProfile | null =>
+            state.current_profile?.role === 'master' ? (state.current_profile as MasterProfile) : null,
+        customerProfile: (state): CustomerProfile | null =>
+            state.current_profile?.role === 'customer' ? (state.current_profile as CustomerProfile) : null
     },
-    actions: {
-        // ПРИ РЕГИСТРАЦИИ ПРОФИЛЯ
-        setTempRole(role: 'master' | 'customer') {
-            this.temp_role = role
-        },
 
+    actions: {
+        // ----------------------------
+        // БАЗОВЫЕ МЕТОДЫ (Использовать везде)
+        // ----------------------------
         setProfile(profile: Profile | null) {
             this.current_profile = profile
-            this.temp_role = null
         },
 
-        // обнволение роли вручную
-        async assignRole(role: "master" | "customer") {
+        // setTempRole(role: 'master' | 'customer') {
+        //     console.log(`[setTempRole] Установлена временная роль: ${role}`)
+        //     this.temp_role = role
+        // },
+
+        // clearTempRole() {
+        //     this.temp_role = null
+        // },
+
+        // ----------------------------
+        // ОСНОВНЫЕ МЕТОДЫ (вызывать в компонентах)
+        // ----------------------------
+
+        /**
+         * Основной метод для выбора роли (использовать на странице /choose-role)
+         * 1. Проверяет наличие профиля
+         * 2. Если есть - загружает профиль
+         * 3. Если нет - сохраняет temp_role для создания профиля
+         */
+        async selectRole(role: 'master' | 'customer') {
             try {
-                const supabase = useSupabaseClient();
-                await supabase.auth.updateUser({
-                    data: { current_role: role },
-                });
+                console.log(`[selectRole] Начало выбора роли: ${role}`)
+                this.isLoading = true
 
-                await this.refreshSession(); // <- Заменили дублирование кода
-                await this.loadProfile();
+                // 1. Сначала назначаем роль
+                await this.assignRole(role)
 
-            } catch (error) {
-                console.error("[assignRole] Ошибка:", error);
-                throw error;
-            }
-        },
+                // 2. Проверяем наличие профиля
+                const profileExists = await this.checkProfile(role)
+                console.log(`[selectRole] Профиль ${role} существует:`, profileExists)
 
-        // Ничего не сохраняет, только анализирует БД.
-        async determineUserRole(userId: string): Promise<'master' | 'customer' | null> {
-            const supabase = useSupabaseClient()
-
-            try {
-                // 1. Параллельно проверяем оба типа профилей
-                const [
-                    { data: masterProfile },
-                    { data: customerProfile }
-                ] = await Promise.all([
-                    supabase
-                        .from('master_profile')
-                        .select('id')
-                        .eq('user_id', userId)
-                        .maybeSingle(),
-                    supabase
-                        .from('customer_profiles')
-                        .select('id')
-                        .eq('user_id', userId)
-                        .maybeSingle()
-                ])
-
-                // 2. Определяем приоритетную роль, если есть оба профиля
-                if (masterProfile && customerProfile) {
-                    return 'master' // или можно добавить логику выбора
+                if (profileExists) {
+                    // 3. Если профиль есть - загружаем его
+                    await this.loadProfile()
+                    return true
                 }
 
-                // 3. Возвращаем роль, если найден ровно один профиль
-                if (masterProfile) return 'master'
-                if (customerProfile) return 'customer'
-
-                // 4. Если профилей нет
-                console.warn('[determineUserRole] Не найдено ни одного профиля для пользователя', userId)
-                return null
+                return false
 
             } catch (error) {
-                console.error('[determineUserRole] Ошибка проверки профилей:', error)
-                return null
+                console.error(`[selectRole] Ошибка выбора роли ${role}:`, error)
+                this.error = error.message
+                throw error
+            } finally {
+                this.isLoading = false
             }
         },
 
-        async refreshSession() {
+        /**
+         * Проверка + загрузка профиля если есть (использовать при входе в приложение)
+         */
+        async initProfile() {
+            try {
+                console.log('[initProfile] Инициализация профиля')
+                const supabase = useSupabaseClient()
+                const { data: { user } } = await supabase.auth.getUser()
+
+                if (!user) {
+                    console.warn('[initProfile] Пользователь не авторизован. Обнуляю профиль')
+                    this.setProfile(null)
+                    return false
+                }
+
+                // Если роль уже выбрана - загружаем профиль
+                if (user.user_metadata?.current_role) {
+                    console.log('[initProfile] Роль уже назначена, загружаем профиль')
+                    await this.loadProfile()
+                    return !!this.current_profile; // true если профиль загружен
+
+                }
+
+                return false
+            } catch (error) {
+                console.error('[initProfile] Ошибка инициализации:', error)
+                this.error = error.message
+                return false
+            }
+        },
+
+        // ----------------------------
+        // СЛУЖЕБНЫЕ МЕТОДЫ не для вызова в компонентах, используются в других методах для проверок итд
+        // ----------------------------
+
+        async checkProfile(role: 'master' | 'customer'): Promise<boolean> {
+            console.log(`[checkProfile] Проверка на наличие профиля ${role} у текущего пользователя`)
             const supabase = useSupabaseClient()
-            const { data: { session } } = await supabase.auth.getSession()
-            if (session) {
-                await supabase.auth.setSession(session)
+            const { data: { user } } = await supabase.auth.getUser()
+
+            if (!user?.id) {
+                console.warn('[checkProfile] Пользователь не авторизован')
+                return false
+            }
+
+            try {
+                const { data } = await supabase
+                    .from(`${role}_profiles`)
+                    .select('id')
+                    .eq('user_id', user.id)
+                    .maybeSingle()
+
+                return !!data
+            } catch (error) {
+                console.error(`[checkProfile] Ошибка проверки профиля ${role}:`, error)
+                return false
             }
         },
 
-        // загрузка профиля и его данных в состояние стора, чтобы можно было через геттеры брать инфу о профиле на сайт
+        // назначение роли принудительно
+        async assignRole(role: "master" | "customer") {
+            console.log(`[assignRole] Назначение роли: ${role}`)
+            const supabase = useSupabaseClient()
+            await supabase.auth.updateUser({
+                data: { current_role: role }
+            })
+            await this.refreshSession()
+        },
+
+        // загрузхка данных профиля в стор
         async loadProfile() {
             try {
-                this.isLoading = true
-                const supabase = useSupabaseClient()
+                console.log('[loadProfile] Запуск загрузки');
+                this.isLoading = true;
 
-                const { data: { user }, error } = await supabase.auth.getUser();
-                if (error || !user) {
-                    this.setProfile(null); // <- Используем существующий метод
+                const supabase = useSupabaseClient();
+                const { data: { user } } = await supabase.auth.getUser();
+
+                if (!user) {
+                    console.warn('[loadProfile] Пользователь не авторизован');
+                    this.setProfile(null);
                     return;
                 }
 
-                console.log("[loadprofile] Текущий user_metadata:",user.user_metadata)
-
-                // Проверяем роль в user_metadata
-                const role = user.user_metadata?.current_role
-                const profileId = user.user_metadata?.current_profile_id || user.id
+                // Получаем роль ТОЛЬКО из user_metadata
+                const role = user.user_metadata?.current_role;
                 if (!role) {
-                    console.warn('[loadProfile] Роль не назначена в userdata')
-                    this.current_profile = null
-                    return
+                    console.warn('[loadProfile] Роль не назначена в user_metadata');
+                    this.setProfile(null);
+                    return;
                 }
 
-                // Загружаем профиль
-                const { data: profile, error: profileError } = await supabase
-                    .from(`${role}_profiles`) // или ваше название таблицы
+                const { data: profile, error } = await supabase
+                    .from(`${role}_profiles`)
                     .select('*')
                     .eq('user_id', user.id)
-                    .single()
-                if (profileError) throw profileError
+                    .single();
 
+                if (error) throw error;
+
+                console.log('[loadProfile] Успешно загружен профиль:', profile);
                 this.setProfile({ ...profile, role });
 
             } catch (err) {
                 console.error('[loadProfile] Ошибка:', err);
-                this.error = err.message;
                 this.setProfile(null);
+                throw err;
             } finally {
-                this.isLoading = false
+                this.isLoading = false;
             }
-        }
+        },
+
+        async refreshSession() {
+            console.log('[refreshSession] Обновление сессии')
+            const supabase = useSupabaseClient()
+            const { data: { session } } = await supabase.auth.getSession()
+            if (session) await supabase.auth.setSession(session)
+        },
     }
-}
-)
+})

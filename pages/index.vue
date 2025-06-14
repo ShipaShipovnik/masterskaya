@@ -97,6 +97,7 @@ const fetchLatestServices = async () => {
                     id,
                     title,
                     min_price,
+                    deadline,
                     categories (title)  
                     `)
             .order('created_at', { ascending: false })

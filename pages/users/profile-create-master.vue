@@ -63,7 +63,8 @@
 <!-- TODO: реактивная проверка на никнейм в реальном времени времени -->
 <script setup lang="ts">
 definePageMeta({
-  middleware: ['auth']
+  middleware: ['auth'],
+  layout: 'default'
 });
 
 const supabase = useSupabaseClient()
@@ -100,91 +101,93 @@ const handleFileSelected = (file) => {
 // Создание профиля
 const createProfile = async () => {
   try {
-    const supabase = useSupabaseClient()
-    const user = useSupabaseUser()
+    console.log('[createProfile] Начало создания профиля');
+    isLoading.value = true;
 
-    isLoading.value = true
-    uploadError.value = null
+    // 1. Получаем свежие данные пользователя
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) throw new Error('Ошибка получения пользователя');
 
-    // Проверяем роль в JWT
-    const currentRole = user.value?.user_metadata?.current_role
+    // 2. Проверяем роль ТОЛЬКО из user_metadata
+    const currentRole = user.user_metadata?.current_role;
     if (currentRole !== 'master') {
-      throw new Error('в jwt user_metadata роль не мастер')
+      console.error('[createProfile] Роль в user_metadata:', currentRole);
+      throw new Error('Для создания профиля требуется роль мастера');
     }
 
-    // 1. Сначала загружаем аватар (если есть)========================
-    let avatarUrl = null
+
+    let avatarUrl = null;
     if (avatarFile.value) {
       try {
-        // Создаем безопасное имя файла
-        const fileExt = avatarFile.value.name.split('.').pop()
-        const fileName = `${user.value.id}_${Date.now()}.${fileExt}`
-        const filePath = `master_avatars/${fileName}`
+        console.log('[createProfile] Загрузка аватара...');
 
-        // Загружаем файл с обработкой CORS
+        // Создаем уникальное имя файла
+        const fileExt = avatarFile.value.name.split('.').pop();
+        const fileName = `${user.id}_${Date.now()}.${fileExt}`;
+        const filePath = `master_avatars/${fileName}`;
+
+        // Загружаем файл
         const { error: uploadError } = await supabase.storage
           .from('avatars')
           .upload(filePath, avatarFile.value, {
             cacheControl: '3600',
             contentType: avatarFile.value.type || 'image/jpeg',
             upsert: true
-          })
+          });
 
-        if (uploadError) {
-          console.error('Ошибка загрузки:', uploadError)
-          throw new Error('Не удалось загрузить аватар')
-        }
+        if (uploadError) throw uploadError;
 
-        // Получаем ПОСТОЯННЫЙ URL
+        // Получаем публичный URL
         const { data: { publicUrl } } = supabase.storage
           .from('avatars')
-          .getPublicUrl(filePath)
+          .getPublicUrl(filePath);
 
-        form.value.avatar_url = publicUrl
+        avatarUrl = publicUrl;
+        console.log('[createProfile] Аватар загружен:', publicUrl);
 
       } catch (error) {
-        console.error('Ошибка загрузки аватара:', error)
-        throw new Error('Проблема с загрузкой аватара')
+        console.error('[createProfile] Ошибка загрузки аватара:', error);
+        throw new Error('Не удалось загрузить аватар');
       }
     }
 
-    //Создаем профиль ====================================================
-    console.log('Отправка формы', form.value)
-
-    const { data: profile, error } = await supabase
+    // 3. Создаём профиль
+    const { data: newProfile, error: createError } = await supabase
       .from('master_profiles')
       .insert({
-        user_id: user.value.id,
+        user_id: user.id,
         ...form.value,
+        ...(avatarUrl && { avatar_url: avatarUrl })
       })
       .select()
-      .single()
+      .single();
 
-    if (error) throw error
+    if (createError) throw createError;
 
-    //Обновляем JWT с ID профиля
-    await supabase.auth.updateUser({
-      data: { current_profile_id: profile.id },
-    })
+    // 4. Обновляем профиль в хранилище (без вызова loadProfile)
+    profileStore.setProfile({ ...newProfile, role: 'master' });
 
-    await navigateTo(`/users/master/${profile.username}`)
+    // 5. Перенаправляем
+    await navigateTo(`/users/master/${newProfile.username}`);
 
   } catch (err) {
-    console.error('Ошибка создания профиля:', err.message)
-    // Перенаправляем на выбор роли при ошибке
-    if (err.message.includes('выберите роль')) {
-      await navigateTo('/profile-choose')
+    console.error('[createProfile] Ошибка:', err);
+    errorMsg.value = err.message;
+
+    // Если проблема с ролью - возвращаем на выбор
+    if (err.message.includes('роль')) {
+      await navigateTo('/choose-role');
     }
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
+    console.log('[createProfile] Завершено');
   }
-}
+};
 </script>
 
 
 <style lang="scss" scoped>
-
-.profile-create__form { 
+.profile-create__form {
   display: flex;
   flex-direction: column;
   gap: 15px;

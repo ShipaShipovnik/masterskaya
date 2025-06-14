@@ -97,11 +97,7 @@ async function getCategories() {
     categories.value = data || []
 }
 
-// Получаем категории при загрузке
-onMounted(async () => {
-    getCategories()
-    fetchServices() // Первоначальная загрузка услуг
-})
+
 
 // Функция поиска с фильтрами
 const fetchServices = async () => {
@@ -141,6 +137,7 @@ const fetchServices = async () => {
 
         if (error) throw error
         services.value = data
+        console.log('[fetchServices]'+ services.value)
     } catch (e) {
         console.error('Ошибка загрузки услуг:', e)
     } finally {
@@ -165,6 +162,12 @@ watch(
     },
     { deep: true }
 )
+
+// Получаем категории при загрузке
+onMounted(async () => {
+    getCategories()
+    fetchServices() // Первоначальная загрузка услуг
+})
 </script>
 
 <style lang="scss" scoped>

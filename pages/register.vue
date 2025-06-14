@@ -93,7 +93,7 @@ async function signUp() {
             console.log('User status:', await client.auth.getUser())
             console.log('Session:', await client.auth.getSession())
 
-            await navigateTo('/profile-choose', { replace: true })
+            await navigateTo('/choose-role')
         }
 
     } catch (error) {

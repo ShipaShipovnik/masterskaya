@@ -106,9 +106,9 @@ const isAuth = computed(() => !!user.value)
 
 const hasProfile = computed(() => profileStore.hasProfile)
 const activeRole = computed(() => profileStore.current_role)
-const username = computed(() => profileStore.current_profile?.username || 'Гость')
+const username = computed(() => profileStore.current_profile?.username || 'Нет имени')
 const publicName = computed(() => profileStore.current_profile?.public_name || username.value)
-const avatarUrl = computed(() => profileStore.current_profile?.avatar_url || '/default-avatar.png')
+const avatarUrl = computed(() => profileStore.current_profile?.avatar_url)
 
 // Загрузка данных при монтировании
 onMounted(async () => {
@@ -118,17 +118,7 @@ onMounted(async () => {
 })
 
 // Переключение ролей
-const switchRole = async (targetRole: 'master' | 'customer') => {
-    try {
-        await supabase.auth.updateUser({
-            data: { current_role: targetRole }
-        })
-        await profileStore.loadProfile() // Перезагружаем профиль
-        closeMenu()
-    } catch (error) {
-        console.error('Ошибка смены роли:', error)
-    }
-}
+
 
 // Управление меню
 const closeMenu = () => isMenuOpen.value = false
