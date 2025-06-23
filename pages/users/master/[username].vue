@@ -18,13 +18,13 @@
                 </div>
                 <p class="text-muted">Связаться через: </p>
                 <div class="profile-sidebar__socials">
-                    <NuxtLink to="/" class="profile-sidebar__social-btn">
+                    <NuxtLink  v-if="profile?.contacts?.odnoklassniki" :to="profile?.contacts?.odnoklassniki"  target="_blank" class="profile-sidebar__social-btn">
                         <SvgoOkIcon class="footer__icon" />
                     </NuxtLink>
-                    <NuxtLink to="/" class="profile-sidebar__social-btn">
+                    <NuxtLink v-if="profile?.contacts?.vkontakte" :to="profile?.contacts?.vkontakte"  target="_blank" class="profile-sidebar__social-btn">
                         <SvgoVkIcon class="footer__icon" />
                     </NuxtLink>
-                    <NuxtLink to="/" class="profile-sidebar__social-btn">
+                    <NuxtLink  v-if="profile?.contacts?.telegram" :to="profile?.contacts?.telegram"  target="_blank" class="profile-sidebar__social-btn">
                         <SvgoTgIcon class="footer__icon" />
                     </NuxtLink>
                 </div>
