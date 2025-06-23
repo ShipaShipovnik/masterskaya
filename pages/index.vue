@@ -98,7 +98,8 @@ const fetchLatestServices = async () => {
                     title,
                     min_price,
                     deadline,
-                    categories (title)  
+                    categories (title),
+                    photos
                     `)
             .order('created_at', { ascending: false })
             .limit(4);

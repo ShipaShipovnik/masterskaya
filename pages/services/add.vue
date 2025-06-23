@@ -79,7 +79,7 @@
                     Сколько свободных слотов осталось? Указывайте если готовы выполнять эту услугу несколько раз, или
                     оставьте 1 если она единоразовая.
                 </p>
-                <ServicePhotosUploader :initialFiles="photos" @update:files="newFiles = $event" />
+                <ServicePhotosUploader :initialFiles="form.photos" @update:files="photos = $event" :maxFiles="10" />
             </div>
 
             <button type="submit"
@@ -104,8 +104,6 @@ const activeRole = computed(() => profileStore.current_role)
 const username = computed(() => profileStore.current_profile?.username)
 const master_id = computed(() => profileStore.current_profile?.id || 'Гость')
 
-
-
 async function getCategories() {
     const { data, error } = await supabase.from('categories').select()
     if (error) {
@@ -116,7 +114,8 @@ async function getCategories() {
     categories.value = data || []
 }
 
-const form = ref({
+const photos = ref([]) // Массив File объектов
+const form = useState('serviceForm', () => ({
     title: '',
     description: '',
     terms: '',
@@ -125,12 +124,52 @@ const form = ref({
     max_price: null,
     amount: 1,
     category_id: null,
-    photos: []
-})
+    photos: [] //urls фоток
+}))
 
 async function createService() {
     try {
+        console.log('[createService] Начало формирования услуги');
 
+        let uploadedPhotoUrls = [];
+
+        // Загружаем фотографии если они есть
+        if (photos.value && photos.value.length) {
+            console.log('[createService] Начало загрузки фотографий...');
+
+            for (const [index, file] of photos.value.entries()) {
+                try {
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${master_id.value}_${Date.now()}_${index}.${fileExt}`;
+                    const filePath = `service-photos/${master_id.value}/${fileName}`;
+
+                    console.log(`[createService] Загрузка файла ${index + 1}/${photos.value.length}: ${file.name}`);
+
+                    const { error: uploadError } = await supabase.storage
+                        .from('service-photos')
+                        .upload(filePath, file);
+
+                    if (uploadError) throw uploadError;
+
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('service-photos')
+                        .getPublicUrl(filePath);
+
+                    uploadedPhotoUrls.push(publicUrl);
+                    console.log(`[createService] Файл загружен: ${publicUrl}`);
+
+                } catch (fileError) {
+                    console.error(`[createService] Ошибка при загрузке файла ${file.name}:`, fileError);
+                    // Продолжаем обработку остальных файлов
+                    continue;
+                }
+            }
+
+            form.value.photos = uploadedPhotoUrls;
+            console.log('[createService] Все загруженные фото:', uploadedPhotoUrls);
+        }
+
+        // отправка услуги вместе с фотками
         const { error } = await supabase
             .from('services')
             .insert({
@@ -141,6 +180,7 @@ async function createService() {
         if (error) throw error
 
         console.log("[CREATE SERVICE] Удача: ")
+        localStorage.removeItem('serviceForm')
 
         await navigateTo(`/users/master/${username.value}`)
     } catch (err) {
@@ -149,9 +189,14 @@ async function createService() {
     }
 }
 
-
 onMounted(() => {
     getCategories()
+
+    const savedForm = localStorage.getItem('serviceForm')
+    if (savedForm) {
+        form.value = JSON.parse(savedForm)
+    }
+
 })
 </script>
 

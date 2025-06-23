@@ -1,6 +1,6 @@
 <template>
     <div class="photo-uploader">
-        <label v-if="label">{{ label }}</label>
+        <!-- <label v-if="label">{{ label }}</label> -->
         <div class="dropzone" @dragenter.prevent="setActive" @dragleave.prevent="setInactive" @dragover.prevent
             @drop.prevent="handleDrop" :class="{ 'active-dropzone': isActive, 'has-error': error }">
 
@@ -28,11 +28,9 @@
     </div>
 </template>
 
-<script setup>
-import { ref, onBeforeUnmount } from 'vue'
-
+<script setup lang="ts">
 const props = defineProps({
-    label: String,
+    // label: String,
     maxFiles: {
         type: Number,
         default: 10
@@ -48,14 +46,13 @@ const emit = defineEmits(['update:files'])
 const isActive = ref(false)
 const error = ref('')
 const fileInput = ref(null)
-const uploadedFiles = ref([]) // Храним оригинальные File объекты
-const previewUrls = ref([])   // Храним blob URLs для превью
+const uploadedFiles = ref<File[]>([]) // Храним File объекты
+const previewUrls = ref<string[]>([]) // Храним blob URLs для превью
+
 
 // Инициализация начальных файлов
 if (props.initialFiles.length) {
     previewUrls.value = [...props.initialFiles]
-    // Для начальных файлов uploadedFiles будет пустым,
-    // так как у нас есть только их URL, а не File объекты
 }
 
 const setActive = () => {
@@ -66,83 +63,59 @@ const setInactive = () => {
     isActive.value = false
 }
 
-const validateFiles = (files) => {
-    // Проверка максимального количества файлов
-    if (files.length + previewUrls.value.length > props.maxFiles) {
+const handleFileSelect = async (e) => {
+    const files = Array.from(e.target.files || [])
+    processFiles(files)
+    e.target.value = '' // Сброс input
+}
+
+// проверка и валидация файлов
+const processFiles = (files) => {
+    if (files.length + uploadedFiles.value.length > props.maxFiles) {
         error.value = `Максимум ${props.maxFiles} файлов`
-        return false
+        return
     }
 
-    // Проверка каждого файла
-    for (const file of files) {
-        if (!file.type.match('image.*')) {
+    files.forEach(file => {
+        if (!file.type.startsWith('image/')) {
             error.value = 'Только изображения (JPEG, PNG)'
-            return false
+            return
         }
 
         if (file.size > 5 * 1024 * 1024) {
             error.value = 'Файл слишком большой (макс. 5MB)'
-            return false
+            return
         }
-    }
 
-    error.value = ''
-    return true
-}
-
-const handleDrop = (e) => {
-    setInactive()
-    const files = Array.from(e.dataTransfer.files)
-    if (!validateFiles(files)) return
-    processFiles(files)
-}
-
-const handleFileSelect = (e) => {
-    const files = Array.from(e.target.files)
-    if (!validateFiles(files)) return
-    processFiles(files)
-    e.target.value = '' // Сброс для повторной загрузки
-}
-
-const processFiles = (files) => {
-    files.forEach(file => {
-        // Создаем превью
         previewUrls.value.push(URL.createObjectURL(file))
-        // Сохраняем оригинальный файл
         uploadedFiles.value.push(file)
     })
+
     emitFilesUpdate()
+    console.log('[PhotoUploader] Текущие файлы:', uploadedFiles.value.map(f => f.name));
+    error.value = ''
 }
 
+
 const removeFile = (index) => {
-    // Очищаем blob URL
-    URL.revokeObjectURL(previewUrls.value[index])
-    // Удаляем из обоих массивов
-    previewUrls.value.splice(index, 1)
-    uploadedFiles.value.splice(index, 1)
-    emitFilesUpdate()
+    console.log('[PhotoUploader] Удаление файла:', previewUrls.value[index]);
+    URL.revokeObjectURL(previewUrls.value[index]);
+    previewUrls.value.splice(index, 1);
+    uploadedFiles.value.splice(index, 1);
+    emitFilesUpdate();
+    console.log('[PhotoUploader] Оставшиеся файлы:', uploadedFiles.value.map(f => f.name));
 }
 
 const emitFilesUpdate = () => {
-    // Отправляем родителю только File объекты
     emit('update:files', [...uploadedFiles.value])
 }
 
-const triggerFileInput = () => {
-    fileInput.value.click()
-}
-
-// Очистка blob URL при размонтировании
 onBeforeUnmount(() => {
-    previewUrls.value.forEach(url => {
-        if (url.startsWith('blob:')) {
-            URL.revokeObjectURL(url)
-        }
-    })
+    previewUrls.value.forEach(url => URL.revokeObjectURL(url))
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .photo-uploader {
     width: 100%;
     margin-bottom: 1rem;
@@ -157,7 +130,7 @@ onBeforeUnmount(() => {
     justify-content: center;
     align-items: center;
     gap: 16px;
-    border: 2px dashed #3b82f6;
+    border: 2px dashed $red;
     background-color: #f8fafc;
     border-radius: 4px;
     transition: all 0.3s ease;

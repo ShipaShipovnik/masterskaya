@@ -1,7 +1,7 @@
 <template>
     <div class="card" @click="openModal">
         <div class="card__image-container">
-            <img src="~/assets/images/test_service.jpg" alt="service photo" class="card__image">
+            <img :src="servicePhoto" alt="service photo" class="card__image" @error="handleImageError">
             <div class="card__category-label">
                 {{ service.categories.title }}
             </div>
@@ -25,13 +25,24 @@
         </div>
     </div>
     <Teleport to="body">
-        <ServiceModal v-if="isModalOpen" :serviceId="service.id" @close="closeModal"  :show="isModalOpen"/>
+        <ServiceModal v-if="isModalOpen" :serviceId="service.id" @close="closeModal" :show="isModalOpen" />
     </Teleport>
 
 </template>
 
 <script setup>
 const isModalOpen = ref(false)
+const defaultImage = '/images/default-service.jpg'; // Путь к изображению-заглушке
+
+const props = defineProps({
+    service: {
+        type: Object,
+        required: true,
+        validator: (value) => {
+            return 'title' in value && 'categories' in value
+        }
+    }
+})
 
 const openModal = () => {
     isModalOpen.value = true
@@ -43,15 +54,14 @@ const closeModal = () => {
     document.body.style.overflow = ''
 }
 
-const props = defineProps({
-    service: {
-        type: Object,
-        required: true,
-        validator: (value) => {
-            return 'title' in value && 'categories' in value
-        }
-    }
+const servicePhoto = computed(() => {
+    return props.service.photos?.[0] || defaultImage;
 })
+
+// Обработчик ошибки загрузки изображения
+const handleImageError = (e) => {
+    e.target.src = defaultImage;
+};
 </script>
 
 <style lang="scss" scoped>
