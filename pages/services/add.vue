@@ -84,7 +84,7 @@
 
             <button type="submit"
                 class="btn btn-red bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded transition-colors">
-                Создать услугу
+                {{ isLoading? 'Создание...':'Создать услугу'}}
             </button>
         </form>
     </div>
@@ -97,7 +97,7 @@ definePageMeta({
 const supabase = useSupabaseClient()
 const categories = ref([])
 const errorMsg = ref("")
-
+const isLoading= ref(false)
 
 const profileStore = useProfileStore()
 const activeRole = computed(() => profileStore.current_role)
@@ -130,6 +130,7 @@ const form = useState('serviceForm', () => ({
 async function createService() {
     try {
         console.log('[createService] Начало формирования услуги');
+        isLoading.value = true
 
         let uploadedPhotoUrls = [];
 
@@ -178,7 +179,7 @@ async function createService() {
             })
 
         if (error) throw error
-
+        
         console.log("[CREATE SERVICE] Удача: ")
         localStorage.removeItem('serviceForm')
 
@@ -186,6 +187,8 @@ async function createService() {
     } catch (err) {
         console.error("[CREATE SERVICE] Ошибка:", err)
         errorMsg.value = err.message || 'Ошибка создания услуги'
+    } finally{
+        isLoading.value = false
     }
 }
 

@@ -31,7 +31,7 @@
                     </NuxtLink> -->
                     <button @click="isMenuOpen = !isMenuOpen" class="menu-toggle" aria-label="Toggle menu">
                         <h1>МЕНЮ</h1>
-                        <Icon name="meteor-icons:list" size="2em" />
+                        <Icon name="material-symbols-light:menu" size="2em" />
                     </button>
                 </span>
                 <span v-else>

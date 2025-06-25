@@ -1,7 +1,7 @@
 <template>
     <div class="card" @click="openModal">
         <div class="card__image-container">
-            <img :src="servicePhoto" alt="service photo" class="card__image" @error="handleImageError">
+            <img :src="servicePhoto" alt="service photo" class="card__image">
             <div class="card__category-label">
                 {{ service.categories.title }}
             </div>
@@ -32,7 +32,7 @@
 
 <script setup>
 const isModalOpen = ref(false)
-const defaultImage = '/images/default-service.jpg'; // Путь к изображению-заглушке
+// const defaultImage = '/images/default-service.jpg'; // Путь к изображению-заглушке
 
 const props = defineProps({
     service: {
@@ -55,13 +55,9 @@ const closeModal = () => {
 }
 
 const servicePhoto = computed(() => {
-    return props.service.photos?.[0] || defaultImage;
+    return props.service.photos?.[0];
 })
 
-// Обработчик ошибки загрузки изображения
-const handleImageError = (e) => {
-    e.target.src = defaultImage;
-};
 </script>
 
 <style lang="scss" scoped>

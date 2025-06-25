@@ -19,20 +19,7 @@
                             </button>
                         </header>
                         <section class="service-modal-gallery">
-                            <div class="swiper service-gallery">
-                                <div class="swiper-wrapper">
-                                    <div v-for="(image, index) in images" :key="index" class="swiper-slide">
-                                        <img :src="image" :alt="`Услуга ${index + 1}`">
-                                    </div>
-                                </div>
-
-                                <button class="gallery-arrow-btn swiper-button-prev">
-                                    <Icon name="material-symbols:arrow-back-ios" style="color: black" />
-                                </button>
-                                <button class="gallery-arrow-btn swiper-button-next">
-                                    <Icon name="material-symbols:arrow-forward-ios" style="color: black" />
-                                </button>
-                            </div>
+                            <ServicePhotoSlider :photos="serviceData.photos"/>
                         </section>
                         <section class="service-modal-info">
                             <div class="service-modal-info__top">
@@ -82,8 +69,8 @@
     </transition>
 </template>
 <script setup>
-import Swiper from 'swiper'
-import 'swiper/css'
+import { register } from 'swiper/element'
+register();
 
 const props = defineProps({
     show: {
@@ -113,11 +100,11 @@ async function fetchService() {
         const { data, error } = await supabase
             .from('services')
             .select(`
-        *,
-        categories (
-          title
-        )
-      `)
+                *,
+                categories (
+                title
+                )
+            `)
             .eq('id', props.serviceId)
             .single()
 
@@ -163,7 +150,6 @@ onMounted(() => {
 
     .service-modal__small-h {
         font-size: 16px;
-
     }
 
     &-backdrop {
@@ -194,9 +180,8 @@ onMounted(() => {
         outline: 1px red solid;
         grid-template-columns: repeat(12, 1fr);
         column-gap: 30px;
+        row-gap: 30px;
         max-width: 1200px;
-
-
         margin: 1.75rem auto;
         padding: 20px 30px;
         border-radius: 5px;
@@ -208,7 +193,6 @@ onMounted(() => {
     }
 
     &-header {
-        padding-bottom: 16px;
         font-size: 25px;
         display: flex;
         justify-content: space-between;
@@ -216,7 +200,7 @@ onMounted(() => {
     }
 
     &-gallery {
-        grid-column: 1 / 7;
+        grid-column: 1 / 9;
         min-height: 500px;
     }
 
@@ -255,6 +239,10 @@ onMounted(() => {
 
     &-bottom {
         grid-column: 1 / 13;
+    }
+
+    &__description{
+        margin-bottom: 10px;
     }
 }
 </style>
