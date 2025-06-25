@@ -18,7 +18,18 @@
             <div class="services-grid">
                 <ServiceCard v-for="service in latestServices" :key="service.id" :service="service" />
                 <div v-if="latestServices.length === 0" class="empty-state">
-                    У этого мастера пока нет услуг
+                    На сайте пока нет услуг или произошла ошибка загрузки.
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="content">
+        <div class="layout-container">
+            <h2 class="section-subhead">Последние присоеденившиеся к нам мастера:</h2>
+            <div class="profiles-grid">
+                <ProfileCard v-for="profile in latestProfiles" :key="profile.id" :profile="profile" />
+                <div v-if="latestServices.length === 0" class="empty-state">
+                    На сайте пока нет пользователей или произошла ошибка загрузки.
                 </div>
             </div>
         </div>
@@ -88,33 +99,59 @@
 const error = ref(null)
 const client = useSupabaseClient()
 
+const latestServices = ref([])
+const latestProfiles = ref([])
+
 
 const fetchLatestServices = async () => {
     try {
-        const { data: latestServices, error } = await client
+        const { data, error: fetchError } = await client
             .from('services')
             .select(`
-                    id,
-                    title,
-                    min_price,
-                    deadline,
-                    categories (title),
-                    photos
-                    `)
+                id,
+                title,
+                min_price,
+                deadline,
+                categories (title),
+                photos
+            `)
             .order('created_at', { ascending: false })
             .limit(4);
-        if (error) throw error
-        return latestServices || []
+
+        if (fetchError) throw fetchError
+        latestServices.value = data || []
     } catch (err) {
         error.value = err.message
         console.error('Ошибка загрузки услуг:', err)
-        return []
     }
 }
 
-const latestServices = await fetchLatestServices()
+const fetchLatestProfiles = async () => {
+    try {
+        const { data, error: fetchError } = await client
+            .from('master_profiles')
+            .select(`
+                id,
+                public_name,
+                username,
+                avatar_url,
+                job
+            `)
+            .order('created_at', { ascending: false })
+            .limit(4);
 
-onUnmounted(fetchLatestServices)
+        if (fetchError) throw fetchError
+        latestProfiles.value = data || []
+    } catch (err) {
+        error.value = err.message
+        console.error('Ошибка загрузки профилей:', err)
+    }
+}
+
+onMounted(async () => {
+    await fetchLatestServices()
+    await fetchLatestProfiles()
+})
 </script>
 
 <style scoped lang="scss">
@@ -280,6 +317,27 @@ onUnmounted(fetchLatestServices)
     // margin-top: 40px;
 }
 
+// Сетка юзеров
+.profiles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+@media (max-width: 600px) {
+    .profiles-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 601px) and (max-width: 900px) {
+    .profiles-grid{
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+// 
 .articles-grid {
     display: grid;
     grid-template-columns: repeat(3, 4fr);
