@@ -188,7 +188,7 @@ async function createService() {
                     const { data: urlData } = supabase.storage
                         .from('service-photos')
                         .getPublicUrl(filePath);
-                    
+
                     console.log('Публичный URL:', urlData.publicUrl);
                     uploadedPhotoUrls.push(urlData.publicUrl);
                     console.groupEnd();
@@ -197,18 +197,17 @@ async function createService() {
                     console.groupEnd();
                     console.error(`Ошибка при загрузке файла ${file.name}:`, fileError);
                     uploadFailed = true;
-                    
+
                     // Сохраняем информацию об ошибке для пользователя
-                    errorMsg.value = `Ошибка при загрузке ${file.name}: ${
-                        fileError.message || 'неизвестная ошибка'
-                    }. Проверьте формат и размер файла (макс. 5MB, только JPG/PNG/WebP)`;
-                    
+                    errorMsg.value = `Ошибка при загрузке ${file.name}: ${fileError.message || 'неизвестная ошибка'
+                        }. Проверьте формат и размер файла (макс. 5MB, только JPG/PNG/WebP)`;
+
                     // Удаляем уже загруженные файлы
                     if (uploadedPhotoUrls.length > 0) {
                         console.log('Удаление загруженных файлов из-за ошибки...');
                         await deleteUploadedFiles(uploadedPhotoUrls);
                     }
-                    
+
                     break; // Прерываем цикл при ошибке
                 }
             }
@@ -259,11 +258,11 @@ async function deleteUploadedFiles(urls) {
     try {
         console.log('Начало удаления загруженных файлов...');
         const filesToDelete = urls.map(url => url.split('service-photos/')[1]);
-        
+
         const { data, error } = await supabase.storage
             .from('service-photos')
             .remove(filesToDelete);
-            
+
         console.log('Результат удаления файлов:', { data, error });
     } catch (deleteError) {
         console.error('Ошибка при удалении файлов:', deleteError);
@@ -301,17 +300,15 @@ onMounted(() => {
     font-size: 12px;
 }
 
+// .default-input {
+//     @apply border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500;
+// }
 
+// .default-textarea {
+//     @apply border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500;
+// }
 
-.default-input {
-    @apply border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500;
-}
-
-.default-textarea {
-    @apply border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500;
-}
-
-.btn-red {
-    @apply bg-red-500hover:bg-red-600 text-white;
-}
+// .btn-red {
+//     @apply bg-red-500hover:bg-red-600 text-white;
+// }
 </style>
