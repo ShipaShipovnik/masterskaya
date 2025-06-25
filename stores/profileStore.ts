@@ -1,5 +1,6 @@
 // stores/profile.ts
 import { defineStore } from 'pinia'
+import Logout from '~/pages/logout.vue'
 
 // интерфейсы тайпскрипта =============================================
 export type ProfileRole = 'master' | 'customer'
@@ -75,7 +76,6 @@ export const useProfileStore = defineStore('profileStore', {
          * Основной метод для выбора роли (использовать на странице /choose-role)
          * 1. Проверяет наличие профиля
          * 2. Если есть - загружает профиль
-         * 3. Если нет - сохраняет temp_role для создания профиля
          */
         async selectRole(role: 'master' | 'customer') {
             try {
@@ -103,6 +103,33 @@ export const useProfileStore = defineStore('profileStore', {
                 throw error
             } finally {
                 this.isLoading = false
+            }
+        },
+        async logout() {
+            try {
+                const supabase = useSupabaseClient()
+
+                // Принудительный сброс роли на сервере
+                await supabase.auth.updateUser({
+                    data: { current_role: null }
+                })
+
+                // Выход из системы
+                const { error } = await supabase.auth.signOut()
+                if (error) throw error
+
+                // Полный сброс состояния хранилища
+                this.$reset()
+
+                // Дополнительный хард-ресет для гарантии
+                localStorage.removeItem('profileStore')
+                sessionStorage.clear()
+
+                return true
+            } catch (error) {
+                console.error('[logout] Ошибка:', error)
+                this.error = error.message
+                return false
             }
         },
 

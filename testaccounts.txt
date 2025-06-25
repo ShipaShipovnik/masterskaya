@@ -1,0 +1,5 @@
+user1@mail.ru
+user1pass
+
+user2@mail.ru
+user2pass

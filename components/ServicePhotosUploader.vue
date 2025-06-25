@@ -33,7 +33,7 @@ const props = defineProps({
     // label: String,
     maxFiles: {
         type: Number,
-        default: 10
+        default: 10 
     },
     initialFiles: {
         type: Array,

@@ -57,36 +57,23 @@
                         <p> {{ publicName }}</p>
                     </span>
                 </NuxtLink>
-                <hr class="dropdown-divider">
-                
-                <button @click="switchRole('master')" v-if="activeRole === 'customer'" class="dropdown-item">
-                    Стать Мастером
-                </button>
-                <button @click="switchRole('customer')" v-if="activeRole === 'master'" class="dropdown-item">
-                    Стать Заказчиком
-                </button>
-               
-                <hr class="dropdown-divider">
-                <hr class="dropdown-divider">
-                <NuxtLink to="/users/profile-create-customer" class="dropdown-item" @click="closeMenu">
-                    Создать профиль Заказчика
+                <!-- <hr class="dropdown-divider">
+                <NuxtLink :to="`/users/profile-create-${activeRole === 'master' ? 'master' : 'customer'}`"
+                    class="dropdown-item" @click="closeMenu">
+                    Создать профиль {{ activeRole === 'master' ? 'Заказчика' : 'Мастера' }}
+                </NuxtLink> -->
+                 <hr class="dropdown-divider">
+                <NuxtLink to="/choose-role" class="dropdown-item" @click="closeMenu">
+                    Сменить профиль
                 </NuxtLink>
-                <hr class="dropdown-divider">
-                <NuxtLink to="/users/profile-create-master" class="dropdown-item" @click="closeMenu">
-                    Создать профиль Мастера
-                </NuxtLink>
-
-                <!-- <p class="header-auth__profile dropdown-item " v-if="!hasProfile">
-                    Завершите создание профиля.
-                </p> -->
                 <hr class="dropdown-divider">
                 <NuxtLink to="/faq" class="dropdown-item" @click="closeMenu">
                     Поддержка
                 </NuxtLink>
                 <hr class="dropdown-divider">
-                <button @click="logout" class="dropdown-item dropdown-logout">
+                <NuxtLink to="/logout" class="dropdown-item dropdown-logout" @click="closeMenu">
                     Выйти
-                </button>
+                </NuxtLink>
             </div>
         </div>
     </header>
@@ -131,18 +118,7 @@ const handleClickOutside = (event) => {
     }
 }
 
-// Логаут
-async function logout() {
-    try {
-        const { error } = await supabase.auth.signOut()
-        if (error) throw error
-        successMsg.value = "Вы вышли"
-        closeMenu()
-        await navigateTo('/', { replace: true })
-    } catch (error) {
-        console.error('Ошибка выхода:', error)
-    }
-}
+
 
 // Обработчики событий
 onMounted(() => document.addEventListener('click', handleClickOutside))

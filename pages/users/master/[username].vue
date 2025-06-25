@@ -9,8 +9,8 @@
                 <p class="profile-sidebar__job text-muted">{{ profile?.job || 'Должность не указана' }}</p>
 
                 <div class="profile-sidebar__tabs">
-                    <button class="profile-sidebar__tab-btn btn" :class="{ 'active-tab-btn': activeTab === 'gallery' }"
-                        @click="handleTabChange('gallery')">Галлерея</button>
+                    <!-- <button class="profile-sidebar__tab-btn btn" :class="{ 'active-tab-btn': activeTab === 'gallery' }"
+                        @click="handleTabChange('gallery')">Галлерея</button> -->
                     <button class="profile-sidebar__tab-btn btn" :class="{ 'active-tab-btn': activeTab === 'services' }"
                         @click="handleTabChange('services')">Услуги</button>
                     <button class="profile-sidebar__tab-btn btn" :class="{ 'active-tab-btn': activeTab === 'about' }"
@@ -104,7 +104,7 @@ const loading = ref({
     services: true
 })
 const error = ref(null)
-const activeTab = ref('gallery')
+const activeTab = ref('services')
 const profile = ref(null)
 const isOwner = computed(() =>
     user.value?.id === profile.value?.user_id

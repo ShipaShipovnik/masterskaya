@@ -53,8 +53,7 @@ const passIsVisible = ref(false)
 const successMsg = ref("")
 
 async function signIn() {
-    errorMsg.value = ''
-
+    errorMsg.value = '';
     try {
         isLoading.value = true;
         const { error } = await client.auth.signInWithPassword({
@@ -63,8 +62,8 @@ async function signIn() {
         });
         if (error) throw error;
 
-        // После успешного входа - middleware автоматически перенаправит
-        await navigateTo('/'); 
+        await navigateTo('/choose-role');
+
     } catch (error) {
         errorMsg.value = error.message;
     } finally {

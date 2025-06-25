@@ -10,7 +10,8 @@ export default defineNuxtConfig({
     '@nuxt/image',
     'nuxt-svgo',
     '@nuxtjs/supabase',
-    '@pinia/nuxt'
+    '@pinia/nuxt',
+
   ],
   app: {
     head: {
@@ -28,5 +29,5 @@ export default defineNuxtConfig({
   },
   supabase: {
     redirect: false,
-  }
+  },
 })

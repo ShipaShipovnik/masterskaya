@@ -8,7 +8,7 @@
             </button>
             <p class="auth-form__subtext text-muted">
                 <NuxtLink to="/" no-prefetch class="auth-form__link ">
-                   Нет не хочу.
+                    Нет не хочу.
                 </NuxtLink>
             </p>
 
@@ -25,21 +25,40 @@
 
 <script setup>
 const client = useSupabaseClient();
-
-// сообщения
 const isLoading = ref(false);
 const errorMsg = ref("");
 const successMsg = ref("");
 
 async function logout() {
     try {
-        const { error } = await supabase.auth.signOut()
-        if (error) throw error
-        successMsg.value = "Вы вышли"
-        closeMenu()
-        await navigateTo('/', { replace: true })
+        isLoading.value = true;
+        const profileStore = useProfileStore();
+
+        // 1. Принудительный сброс роли на сервере
+        await client.auth.updateUser({
+            data: { current_role: null }
+        });
+
+        // 2. Выход из системы
+        const { error } = await client.auth.signOut();
+        if (error) throw error;
+
+        // 3. Полный сброс хранилища
+        profileStore.$reset();
+
+        // 4. Очистка локального хранилища
+        localStorage.removeItem('profileStore');
+        sessionStorage.clear();
+
+        // 5. Перенаправление с сообщением
+        successMsg.value = "Вы успешно вышли из системы";
+        await navigateTo('/', { replace: true, redirectCode: 301 });
+
     } catch (error) {
-        console.error('Ошибка выхода:', error)
+        errorMsg.value = error.message || 'Ошибка при выходе из системы';
+        console.error('Ошибка выхода:', error);
+    } finally {
+        isLoading.value = false;
     }
 }
 </script>

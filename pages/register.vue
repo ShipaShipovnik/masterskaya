@@ -21,7 +21,7 @@
                 </div>
             </div>
             <div class="auth-form__input-group">
-                <label for="password">Пароль:</label>
+                <label for="password">Повторите пароль:</label>
                 <div class="password-input-group">
                     <input :type="passIsVisible ? 'text' : 'password'"
                         class="auth-form__input default-input password-input" v-model="password2" required>
@@ -33,7 +33,7 @@
                 </div>
             </div>
             <button class="auth-form__btn btn">
-                Зарегестрироваться
+                Зарегистрироваться
             </button>
 
             <div class="auth-messages">

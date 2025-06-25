@@ -34,8 +34,9 @@
 
 <script setup lang="ts">
 definePageMeta({
-  middleware: ['auth']
-})
+  middleware: ['auth'],
+  layout: 'default'
+});
 
 const supabase = useSupabaseClient()
 const profileStore = useProfileStore()

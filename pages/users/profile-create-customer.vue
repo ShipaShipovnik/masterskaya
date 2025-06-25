@@ -33,9 +33,10 @@
     </form>
 </template>
 <!-- TODO: реактивная проверка на никнейм в реальном времени времени -->
-<script setup>
+<script setup lang="ts">
 definePageMeta({
-    middleware: ['auth']
+    middleware: ['auth'],
+    layout: 'default'
 });
 
 const supabase = useSupabaseClient()
@@ -53,10 +54,15 @@ const form = ref({
     public_name: '',
     username: '',
     description: '',
-    avatar_url:'',
+    avatar_url: '',
+    contacts: {
+        telegram: '',
+        vkontakte: '',
+        odnoklassniki: ''
+    }
 })
 
-const avatarFile = ref < File | null > (null)
+const avatarFile = ref<File | null>(null)
 
 const handleFileSelected = (file) => {
     // получает файл
