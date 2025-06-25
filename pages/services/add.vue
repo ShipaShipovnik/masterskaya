@@ -130,9 +130,11 @@ const form = useState('serviceForm', () => ({
 async function createService() {
     try {
         console.log('[createService] Начало формирования услуги');
-        isLoading.value = true
+        isLoading.value = true;
+        errorMsg.value = '';
 
         let uploadedPhotoUrls = [];
+        let uploadFailed = false;
 
         // Загружаем фотографии если они есть
         if (photos.value && photos.value.length) {
@@ -140,55 +142,131 @@ async function createService() {
 
             for (const [index, file] of photos.value.entries()) {
                 try {
+                    // 1. Валидация файла перед загрузкой
+                    console.group(`Файл ${index + 1}/${photos.value.length}: ${file.name}`);
+                    console.log('Размер:', (file.size / 1024 / 1024).toFixed(2), 'MB');
+                    console.log('Тип:', file.type);
+                    
+                    // Проверка формата и размера
+                    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+                    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+                    
+                    if (!ALLOWED_TYPES.includes(file.type)) {
+                        throw new Error(`Недопустимый формат. Разрешены только: ${ALLOWED_TYPES.join(', ')}`);
+                    }
+                    
+                    if (file.size > MAX_SIZE) {
+                        throw new Error(`Файл слишком большой (${(file.size / 1024 / 1024).toFixed(2)} MB). Максимум 5MB`);
+                    }
+
+                    // 2. Подготовка к загрузке
                     const fileExt = file.name.split('.').pop();
                     const fileName = `${master_id.value}_${Date.now()}_${index}.${fileExt}`;
                     const filePath = `service-photos/${master_id.value}/${fileName}`;
+                    
+                    console.log('Пытаюсь загрузить в:', filePath);
 
-                    console.log(`[createService] Загрузка файла ${index + 1}/${photos.value.length}: ${file.name}`);
-
-                    const { error: uploadError } = await supabase.storage
+                    // 3. Загрузка с подробным логированием
+                    const uploadStartTime = Date.now();
+                    const { data: uploadData, error: uploadError } = await supabase.storage
                         .from('service-photos')
-                        .upload(filePath, file);
+                        .upload(filePath, file, {
+                            cacheControl: '3600',
+                            contentType: file.type,
+                            upsert: false
+                        });
 
-                    if (uploadError) throw uploadError;
+                    console.log('Ответ от Supabase:', { uploadData, uploadError });
+                    console.log('Время загрузки:', (Date.now() - uploadStartTime) / 1000, 'сек');
 
-                    const { data: { publicUrl } } = supabase.storage
+                    if (uploadError) {
+                        console.error('Ошибка загрузки:', uploadError);
+                        throw uploadError;
+                    }
+
+                    // 4. Получение публичного URL
+                    const { data: urlData } = supabase.storage
                         .from('service-photos')
                         .getPublicUrl(filePath);
-
-                    uploadedPhotoUrls.push(publicUrl);
-                    console.log(`[createService] Файл загружен: ${publicUrl}`);
+                    
+                    console.log('Публичный URL:', urlData.publicUrl);
+                    uploadedPhotoUrls.push(urlData.publicUrl);
+                    console.groupEnd();
 
                 } catch (fileError) {
-                    console.error(`[createService] Ошибка при загрузке файла ${file.name}:`, fileError);
-                    // Продолжаем обработку остальных файлов
-                    continue;
+                    console.groupEnd();
+                    console.error(`Ошибка при загрузке файла ${file.name}:`, fileError);
+                    uploadFailed = true;
+                    
+                    // Сохраняем информацию об ошибке для пользователя
+                    errorMsg.value = `Ошибка при загрузке ${file.name}: ${
+                        fileError.message || 'неизвестная ошибка'
+                    }. Проверьте формат и размер файла (макс. 5MB, только JPG/PNG/WebP)`;
+                    
+                    // Удаляем уже загруженные файлы
+                    if (uploadedPhotoUrls.length > 0) {
+                        console.log('Удаление загруженных файлов из-за ошибки...');
+                        await deleteUploadedFiles(uploadedPhotoUrls);
+                    }
+                    
+                    break; // Прерываем цикл при ошибке
                 }
             }
 
+            if (uploadFailed) {
+                return; // Не продолжаем если были ошибки загрузки
+            }
+
             form.value.photos = uploadedPhotoUrls;
-            console.log('[createService] Все загруженные фото:', uploadedPhotoUrls);
+            console.log('[createService] Все фото успешно загружены:', uploadedPhotoUrls);
         }
 
-        // отправка услуги вместе с фотками
-        const { error } = await supabase
+        // 5. Отправка основной формы
+        console.log('Отправка данных услуги...');
+        const { data: serviceData, error: serviceError } = await supabase
             .from('services')
             .insert({
                 ...form.value,
                 master_id: master_id.value
             })
+            .select(); // Добавляем .select() чтобы получить ответ
 
-        if (error) throw error
-        
-        console.log("[CREATE SERVICE] Удача: ")
-        localStorage.removeItem('serviceForm')
+        console.log('Ответ от Supabase (создание услуги):', { serviceData, serviceError });
 
-        await navigateTo(`/users/master/${username.value}`)
+        if (serviceError) {
+            // Удаляем фото если не удалось сохранить услугу
+            if (form.value.photos.length > 0) {
+                await deleteUploadedFiles(form.value.photos);
+            }
+            throw serviceError;
+        }
+
+        // 6. Успешное завершение
+        console.log("[CREATE SERVICE] Успешно создана услуга:", serviceData);
+        localStorage.removeItem('serviceForm');
+        await navigateTo(`/users/master/${username.value}`);
+
     } catch (err) {
-        console.error("[CREATE SERVICE] Ошибка:", err)
-        errorMsg.value = err.message || 'Ошибка создания услуги'
-    } finally{
-        isLoading.value = false
+        console.error("[CREATE SERVICE] Критическая ошибка:", err);
+        errorMsg.value = err.message || 'Ошибка создания услуги. Проверьте данные и попробуйте снова.';
+    } finally {
+        isLoading.value = false;
+    }
+}
+
+// Функция для удаления загруженных файлов
+async function deleteUploadedFiles(urls) {
+    try {
+        console.log('Начало удаления загруженных файлов...');
+        const filesToDelete = urls.map(url => url.split('service-photos/')[1]);
+        
+        const { data, error } = await supabase.storage
+            .from('service-photos')
+            .remove(filesToDelete);
+            
+        console.log('Результат удаления файлов:', { data, error });
+    } catch (deleteError) {
+        console.error('Ошибка при удалении файлов:', deleteError);
     }
 }
 

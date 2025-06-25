@@ -5,7 +5,7 @@
             @drop.prevent="handleDrop" :class="{ 'active-dropzone': isActive, 'has-error': error }">
 
             <div class="dropzone-content">
-                <span>Перетащите сюда фото (от 4 до 10 файлов)</span>
+                <span>Перетащите сюда фото (от 1 до 10 файлов)</span>
                 <span>ИЛИ</span>
                 <label for="fileInput" class="browse-button">Выбрать фото</label>
                 <input type="file" id="fileInput" ref="fileInput" @change="handleFileSelect" accept="image/*"
@@ -137,7 +137,7 @@ onBeforeUnmount(() => {
 }
 
 .active-dropzone {
-    border-color: #1d4ed8;
+    border-color: $red;
     background-color: #dbeafe;
 }
 
@@ -155,14 +155,14 @@ onBeforeUnmount(() => {
 .browse-button {
     padding: 8px 16px;
     color: white;
-    background-color: #3b82f6;
+    background-color: $red;
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .browse-button:hover {
-    background-color: #2563eb;
+    background-color: $red;
 }
 
 input[type="file"] {
@@ -196,7 +196,7 @@ input[type="file"] {
     right: 5px;
     width: 20px;
     height: 20px;
-    background-color: #ef4444;
+    background-color: $red;
     color: white;
     border: none;
     border-radius: 50%;
@@ -208,7 +208,7 @@ input[type="file"] {
 }
 
 .error-message {
-    color: #ef4444;
+    color: $red;
     margin-top: 10px;
     font-size: 14px;
 }

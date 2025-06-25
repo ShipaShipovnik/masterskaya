@@ -69,7 +69,7 @@ watch(() => props.photos, () => {
 .swiper-container {
   position: relative;
   width: 100%;
-  height: 100%;
+  height: 500px;
 }
 
 .service-gallery {
@@ -80,7 +80,8 @@ watch(() => props.photos, () => {
 .swiper-slide-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: scale-down;
+   object-position: center;
   border-radius: 8px;
 }
 
