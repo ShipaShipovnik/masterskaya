@@ -53,7 +53,7 @@
                         </button>
                     </div>
                     <div class="services-container">
-                        <ServiceCard v-for="service in services" :key="service.id" :service="service" />
+                        <ServiceCard v-for="service in services" :key="service.id" :service="service" :isOwner="isOwner" @service-deleted="fetchMasterServices"/>
                         <div v-if="!loading && services.length === 0" class="empty-state">
                             У этого мастера пока нет услуг
                         </div>
