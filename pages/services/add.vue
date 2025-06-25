@@ -299,16 +299,4 @@ onMounted(() => {
     color: rgb(0, 0, 0, 50%);
     font-size: 12px;
 }
-
-// .default-input {
-//     @apply border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500;
-// }
-
-// .default-textarea {
-//     @apply border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500;
-// }
-
-// .btn-red {
-//     @apply bg-red-500hover:bg-red-600 text-white;
-// }
 </style>
