@@ -49,7 +49,7 @@
                 <div class="search-results__header">
                     <div class="search-results__search-bar">
                         <input type="text" class="input-search default-input" placeholder="Поиск по названию услуги..."
-                            v-model="filters.query" @input="performSearch">
+                            v-model="searchQuery" @input="handleSearchInput">
                         <button class="btn-red btn button-search">Найти</button>
                     </div>
                     <h1 class="search-results__title">Результаты поиска</h1>
@@ -60,7 +60,7 @@
                 <div>
                     <div v-if="loading">Loading...</div>
                     <div v-else class="search-results__cards">
-                        <ServiceCard v-for="service in services" :key="service.id" />
+                        <ServiceCard v-for="service in services" :key="service.id" :service="service"/>
                     </div>
                 </div>
             </main>
@@ -73,10 +73,11 @@ const supabase = useSupabaseClient()
 const services = ref([])
 const loading = ref(false)
 const categories = ref([])
+const searchQuery = ref('') // Отдельная переменная для поискового запроса
+const searchTimeout = ref(null) // Таймер для дебаунса
 
 // Параметры фильтрации
 const filters = reactive({
-    query: '',
     priceRange: {
         min: null,
         max: null
@@ -84,7 +85,6 @@ const filters = reactive({
     categoryId: null,
     maxDeadline: null
 })
-
 
 async function getCategories() {
     const { data, error } = await supabase.from('categories').select()
@@ -97,7 +97,13 @@ async function getCategories() {
     categories.value = data || []
 }
 
-
+// Обработчик ввода с дебаунсом
+const handleSearchInput = () => {
+    clearTimeout(searchTimeout.value)
+    searchTimeout.value = setTimeout(() => {
+        fetchServices()
+    }, 500) // Задержка 500 мс
+}
 
 // Функция поиска с фильтрами
 const fetchServices = async () => {
@@ -110,9 +116,10 @@ const fetchServices = async () => {
             .select('*, master_profiles(*), categories(*)')
             .eq('is_available', true)
 
-        // Фильтр по текстовому запросу
-        if (filters.query) {
-            query = query.or(`title.ilike.%${filters.query}%,description.ilike.%${filters.query}%`)
+        // Фильтр по текстовому запросу (исправленный)
+        if (searchQuery.value.trim()) {
+            const searchTerm = `%${searchQuery.value.trim()}%`
+            query = query.or(`title.ilike.${searchTerm},description.ilike.${searchTerm}`)
         }
 
         // Фильтр по категории
@@ -120,16 +127,16 @@ const fetchServices = async () => {
             query = query.eq('category_id', filters.categoryId)
         }
 
-        // Фильтр по цене
-        if (filters.priceRange.min) {
+        // Фильтр по цене (исправленный)
+        if (filters.priceRange.min !== null && filters.priceRange.min !== '') {
             query = query.gte('min_price', filters.priceRange.min)
         }
-        if (filters.priceRange.max) {
+        if (filters.priceRange.max !== null && filters.priceRange.max !== '') {
             query = query.lte('max_price', filters.priceRange.max)
         }
 
         // Фильтр по сроку выполнения
-        if (filters.maxDeadline) {
+        if (filters.maxDeadline !== null && filters.maxDeadline !== '') {
             query = query.lte('deadline', filters.maxDeadline)
         }
 
@@ -137,7 +144,7 @@ const fetchServices = async () => {
 
         if (error) throw error
         services.value = data
-        console.log('[fetchServices]'+ services.value)
+        console.log('Услуги:', services.value)
     } catch (e) {
         console.error('Ошибка загрузки услуг:', e)
     } finally {
@@ -147,7 +154,7 @@ const fetchServices = async () => {
 
 // Сброс фильтров
 const resetFilters = () => {
-    filters.query = ''
+    searchQuery.value = ''
     filters.priceRange = { min: null, max: null }
     filters.categoryId = null
     filters.maxDeadline = null
@@ -156,9 +163,12 @@ const resetFilters = () => {
 
 // Отслеживание изменений фильтров с debounce
 watch(
-    filters,
+    () => [filters.priceRange, filters.categoryId, filters.maxDeadline],
     () => {
-        fetchServices()
+        clearTimeout(searchTimeout.value)
+        searchTimeout.value = setTimeout(() => {
+            fetchServices()
+        }, 300)
     },
     { deep: true }
 )
@@ -166,7 +176,12 @@ watch(
 // Получаем категории при загрузке
 onMounted(async () => {
     getCategories()
-    fetchServices() // Первоначальная загрузка услуг
+    fetchServices()
+})
+
+// Очистка таймера при размонтировании
+onUnmounted(() => {
+    clearTimeout(searchTimeout.value)
 })
 </script>
 

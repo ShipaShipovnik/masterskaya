@@ -19,7 +19,7 @@
                             </button>
                         </header>
                         <section class="service-modal-gallery">
-                            <ServicePhotoSlider :photos="serviceData.photos"/>
+                            <ServicePhotoSlider :photos="serviceData.photos" />
                         </section>
                         <section class="service-modal-info">
                             <div class="service-modal-info__top">
@@ -38,9 +38,9 @@
                                 </p>
                             </div>
                             <div class="service-modal-info__bottom">
-                                <h3 class="info-li service-price"><span class="text-muted">Цена:</span> от {{
-                                    serviceData.min_price }} ₽</h3>
-                                <button class="btn btn-red order-btn">Написать мастеру</button>
+                                <h5 class="info-li service-price"><span class="text-muted">Цена:</span></h5>
+                                <button class="service-price btn btn-red order-btn"> 
+                                    от {{ serviceData.min_price }} ₽ до {{ serviceData.max_price }} ₽ </button>
                             </div>
                         </section>
                         <section class="service-modal-bottom">
@@ -228,7 +228,7 @@ onMounted(() => {
 
             .service-price {
                 font-weight: 600;
-                font-size: 26px;
+                font-size: 20px;
             }
         }
 
@@ -241,7 +241,7 @@ onMounted(() => {
         grid-column: 1 / 13;
     }
 
-    &__description{
+    &__description {
         margin-bottom: 10px;
     }
 }

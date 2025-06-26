@@ -5,9 +5,13 @@
             <h1>MASTERSKAYA</h1>
             <p>Биржа творцов и фрилансеров для ваших проектов</p>
             <div class="banner-actions">
-                <button class="banner__btn btn btn-red">Я ищу услуги</button>
+                <NuxtLink to="/register" class="banner__btn btn btn-red">
+                    Я ищу услуги
+                </NuxtLink>
                 <span class="btn-separator">или</span>
-                <button class="banner__btn btn btn-red">Я предоставляю услуги</button>
+                <NuxtLink to="/register" class="banner__btn btn btn-red">
+                    Я предоставляю услуги
+                </NuxtLink>
             </div>
         </div>
     </div>
@@ -59,14 +63,14 @@
                 <!-- 2 -->
                 <div class="article article--gradient2">
                     <div class="article__top">
-                        <NuxtLink to="/" class="article__readmore">
+                        <NuxtLink to="/faq" class="article__readmore">
                             <h2 class="article__title">КАК ПРАВИЛЬНО ЗАКАЗАТЬ УСЛУГУ?</h2>
                         </NuxtLink>
                         <p class="article__description">Как найти подходящую услугу. Как работать с мастерами.</p>
                     </div>
 
                     <div class="article__bottom">
-                        <NuxtLink to="/" class="article__readmore">
+                        <NuxtLink to="/faq" class="article__readmore">
                             <p> Читать статью </p>
                             <Icon name="material-symbols:arrow-right-alt" size="2em" />
                         </NuxtLink>
@@ -332,7 +336,7 @@ onMounted(async () => {
 }
 
 @media (min-width: 601px) and (max-width: 900px) {
-    .profiles-grid{
+    .profiles-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }

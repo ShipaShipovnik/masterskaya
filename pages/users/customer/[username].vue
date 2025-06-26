@@ -22,11 +22,11 @@
                 </div>
 
                 <!-- Кнопки редактирования для владельца -->
-                <div v-if="isOwner" class="owner-actions">
+                <!-- <div v-if="isOwner" class="owner-actions">
                     <button @click="navigateTo(`/users/profile/${username}`)" class="profile-edit-btn btn">
                         Редактировать профиль
                     </button>
-                </div>
+                </div> -->
 
             </div>
             <div class="profile-content">

@@ -24,9 +24,9 @@
             </div>
             <Transition name="fade">
                 <div class="card__actions-btns" v-if="isOwner && hover">
-                    <button class="service-edit-btn btn">
+                    <!-- <button class="service-edit-btn btn">
                         Редактировать
-                    </button>
+                    </button> -->
                     <button class="service-delete-btn btn btn-red" @click="deleteService(service.id)">
                         Удалить
                         <Icon name="material-symbols:delete" size="1em" />

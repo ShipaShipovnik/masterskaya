@@ -1,36 +1,38 @@
 <template>
-    <form @submit.prevent="createProfile" class="profile-create__form">
-        <div class="profile-create__input-group">
-            <label>Аватар:</label>
-            <avatarUploader @file-selected="handleFileSelected" />
-            <p class="profile-create__input-subtext">Не больше 5 мб.</p>
+    <div class="page-grid-layout">
+        <form @submit.prevent="createProfile" class="profile-create__form">
+            <div class="profile-create__input-group">
+                <label>Аватар:</label>
+                <avatarUploader @file-selected="handleFileSelected" />
+                <p class="profile-create__input-subtext">Не больше 5 мб.</p>
 
-            <div v-if="uploadError" class="error-message">
-                {{ uploadError }}
+                <div v-if="uploadError" class="error-message">
+                    {{ uploadError }}
+                </div>
             </div>
-        </div>
-        <!-- публичное имя -->
-        <div class="profile-create__input-group">
-            <label>Публичное имя:</label>
-            <p class="profile-create__input-subtext">Данное имя будет отображаться в вашем профиле.</p>
-            <input type="text" class="default-input" v-model="form.public_name">
-        </div>
-        <div class="profile-create__input-group">
-            <label>Юзернейм:</label>
-            <p class="profile-create__input-subtext">Данное имя будет служить в качестве ссылки на ваш профиль.
-            </p>
-            <input type="text" class="default-input" v-model="form.username" required>
-        </div>
-        <div class="profile-create__input-group">
-            <label>Описание профиля:</label>
-            <p class="profile-create__input-subtext">Кратко опишите себя и чем вы занимаетесь.</p>
-            <textarea v-model="form.description" class="default-textarea"></textarea>
-        </div>
+            <!-- публичное имя -->
+            <div class="profile-create__input-group">
+                <label>Публичное имя:</label>
+                <p class="profile-create__input-subtext">Данное имя будет отображаться в вашем профиле.</p>
+                <input type="text" class="default-input" v-model="form.public_name">
+            </div>
+            <div class="profile-create__input-group">
+                <label>Юзернейм:</label>
+                <p class="profile-create__input-subtext">Данное имя будет служить в качестве ссылки на ваш профиль.
+                </p>
+                <input type="text" class="default-input" v-model="form.username" required>
+            </div>
+            <div class="profile-create__input-group">
+                <label>Описание профиля:</label>
+                <p class="profile-create__input-subtext">Кратко опишите себя и чем вы занимаетесь.</p>
+                <textarea v-model="form.description" class="default-textarea"></textarea>
+            </div>
 
-        <button :disabled="isLoading" class="btn btn-red">
-            {{ isLoading ? 'Создание...' : 'Создать профиль заказчика' }}
-        </button>
-    </form>
+            <button :disabled="isLoading" class="btn btn-red">
+                {{ isLoading ? 'Создание...' : 'Создать профиль заказчика' }}
+            </button>
+        </form>
+    </div>
 </template>
 <!-- TODO: реактивная проверка на никнейм в реальном времени времени -->
 <script setup lang="ts">
